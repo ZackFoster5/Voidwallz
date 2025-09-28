@@ -150,7 +150,7 @@ export default function LandingPage() {
                 WHY VOIDWALLZ?
               </h2>
               <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-                We're not just another wallpaper site. We're a community of creators and curators.
+                We&apos;re not just another wallpaper site. We&apos;re a community of creators and curators.
               </p>
             </div>
           </FadeInUp>
@@ -298,50 +298,32 @@ export default function LandingPage() {
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-5xl font-bold mb-6 font-mono uppercase tracking-wide">
                 JOIN THE COMMUNITY
-              </h2>
-              <p className="text-xl opacity-90 max-w-2xl mx-auto">
-                Get early access to new collections, exclusive wallpapers, and be part of our growing community.
-              </p>
+                {
+                  question: "Can I cancel my subscription anytime?",
+                  answer: "Yes! You can cancel your subscription at any time. You&apos;ll continue to have access to premium features until the end of your billing period."
+                },
             </div>
           </FadeInUp>
 
           <FadeInUp delay={0.2}>
             <div className="max-w-md mx-auto">
-              {isSubmitted ? (
-                <div className="card-brutalist p-8 bg-background text-foreground text-center">
-                  <CheckIcon className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold font-mono uppercase mb-2">SUCCESS!</h3>
-                  <p className="text-foreground/70">
-                    Welcome to Voidwallz! We'll be in touch soon.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSignUp} className="space-y-6">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="USERNAME"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
+{{ ... }}
                       className={cn(
                         "w-full px-4 py-4 border-2 border-background bg-background text-gray-900",
                         "placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900",
                         "shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold"
                       )}
-                    />
-                  </div>
-                  
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="EMAIL ADDRESS"
+                    {
+                  question: "Do you offer refunds?",
+                  answer: "Yes, we offer a 30-day money-back guarantee. If you&apos;re not satisfied, contact us for a full refund."
+                },
+              placeholder="EMAIL ADDRESS"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       className={cn(
                         "w-full px-4 py-4 border-2 border-background bg-background text-gray-900",
-                        "placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900",
+{{ ... }}
                         "shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold"
                       )}
                     />
