@@ -191,8 +191,9 @@ export default function CategoriesPage() {
           setError('No live categories yet. Showing our curated sets instead.')
           setCategories(baseCollections.desktop)
         }
-      } catch (err) {
+      } catch (error) {
         if (isMounted) {
+          console.error('Failed to load categories', error)
           setError('Unable to reach the database. Showing curated categories for now.')
           setCategories(baseCollections.desktop)
         }

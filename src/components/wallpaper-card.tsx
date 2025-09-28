@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { HeartIcon, ArrowDownTrayIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { HeartIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { cn, formatNumber } from '@/lib/utils'
 

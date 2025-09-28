@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,8 +23,8 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc'
 
     // Build where clause
-    const where: any = {
-      status: status as any,
+    const where: Prisma.WallpaperWhereInput = {
+      status: status as Prisma.WallpaperStatus,
     }
 
     if (category) {
@@ -55,13 +56,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy clause
-    const orderBy: any = {}
+    const orderBy: Prisma.WallpaperOrderByWithRelationInput = {}
     if (sortBy === 'downloads') {
       orderBy.downloadsCount = sortOrder as 'asc' | 'desc'
     } else if (sortBy === 'rating') {
       orderBy.ratingAverage = sortOrder as 'asc' | 'desc'
     } else {
-      orderBy[sortBy as string] = sortOrder as 'asc' | 'desc'
+      orderBy.createdAt = sortOrder as 'asc' | 'desc'
     }
 
     // Fetch wallpapers

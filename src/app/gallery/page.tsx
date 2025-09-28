@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, HeartIcon, EyeIcon } from '@heroicons/react/24/outline'
@@ -408,10 +409,13 @@ export default function GalleryPage() {
                       wallpaper.deviceType === 'mobile' ? 'aspect-[9/16]' : 'aspect-[16/9]'
                     )}
                   >
-                    <img
+                    <Image
                       src={wallpaper.thumbnailPath}
                       alt={wallpaper.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      unoptimized={wallpaper.thumbnailPath.startsWith('blob:')}
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                     />
                     
                     {/* Featured Badge */}

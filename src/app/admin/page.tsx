@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-animations'
@@ -8,7 +9,6 @@ import {
   ShieldCheckIcon,
   UserGroupIcon,
   PhotoIcon,
-  ArrowTrendingUpIcon,
   UserPlusIcon,
   InboxArrowDownIcon,
   CheckBadgeIcon,
@@ -233,7 +233,7 @@ export default function AdminPage() {
       status: newWallpaper.status,
       curator: newWallpaper.curator.trim(),
       lastEdit: 'Just now',
-      previewUrl: newWallpaper.previewUrl || undefined,
+      previewUrl: newWallpaper.previewUrl ?? 'https://images.unsplash.com/photo-1557683316-973673baf926?w=180&h=120&fit=crop',
       deviceType: newWallpaper.deviceType,
       featuredUntil,
       createdAt: nowIso
@@ -533,9 +533,12 @@ export default function AdminPage() {
                     </label>
                     {newWallpaper.previewUrl && (
                       <div className="md:col-span-6 border-2 border-foreground p-3 flex items-center gap-3 bg-card/40">
-                        <img
+                        <Image
                           src={newWallpaper.previewUrl}
                           alt="New wallpaper preview"
+                          width={96}
+                          height={64}
+                          unoptimized
                           className="w-24 h-16 object-cover border border-foreground"
                         />
                         <div className="text-xs font-mono uppercase tracking-wide text-foreground/70">
@@ -585,9 +588,12 @@ export default function AdminPage() {
                           <td className="py-3 pr-6 text-sm">{wallpaper.curator}</td>
                           <td className="py-3 pr-6">
                             {wallpaper.previewUrl ? (
-                              <img
+                              <Image
                                 src={wallpaper.previewUrl}
                                 alt={`${wallpaper.title} preview`}
+                                width={80}
+                                height={64}
+                                unoptimized
                                 className="w-20 h-16 object-cover border border-foreground"
                               />
                             ) : (

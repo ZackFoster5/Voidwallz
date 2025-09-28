@@ -1,8 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { XMarkIcon, ArrowDownTrayIcon, HeartIcon, EyeIcon, ShareIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, ArrowDownTrayIcon, HeartIcon, ShareIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { cn } from '@/lib/utils'
 import { extractColorsFromImage, generateCSSVariables, type ColorPalette } from '@/lib/color-extractor'
@@ -94,7 +95,7 @@ export function WallpaperPreviewModal({
           })
         })
     }
-  }, [wallpaper?.id, isOpen])
+  }, [wallpaper?.id, wallpaper?.thumbnailPath, isOpen])
 
   if (!wallpaper) return null
 
@@ -127,7 +128,7 @@ export function WallpaperPreviewModal({
       try {
         await navigator.clipboard.writeText(shareData.url)
         console.log('Link copied to clipboard!')
-      } catch (clipboardError) {
+      } catch {
         console.log('Could not copy to clipboard')
       }
     }
@@ -222,14 +223,17 @@ export function WallpaperPreviewModal({
                     </div>
                   </div>
                 )}
-                <img
+                <Image
                   src={wallpaper.thumbnailPath}
                   alt={wallpaper.title}
+                  fill
+                  priority
+                  unoptimized={wallpaper.thumbnailPath.startsWith('blob:')}
                   className={cn(
-                    "max-w-full max-h-full object-contain transition-opacity duration-300",
+                    "object-contain transition-opacity duration-300",
                     imageLoaded ? "opacity-100" : "opacity-0"
                   )}
-                  onLoad={() => setImageLoaded(true)}
+                  onLoadingComplete={() => setImageLoaded(true)}
                 />
                 
                 {/* Image Overlay Actions */}

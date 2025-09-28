@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.WallpaperWhereInput = {
       status: 'PUBLISHED'
     }
 
@@ -116,7 +117,7 @@ export async function GET(request: NextRequest) {
           name: true
         }
       })
-      suggestions = tagSuggestions.map((tag: any) => tag.name)
+      suggestions = tagSuggestions.map((tag) => tag.name)
     }
 
     return NextResponse.json({

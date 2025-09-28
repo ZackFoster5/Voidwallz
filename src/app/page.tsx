@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { ArrowRightIcon, SparklesIcon, ChartBarIcon, PhotoIcon, GlobeAltIcon, PuzzlePieceIcon, DevicePhoneMobileIcon, TruckIcon, RocketLaunchIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, ChartBarIcon, PhotoIcon, GlobeAltIcon, PuzzlePieceIcon, DevicePhoneMobileIcon, TruckIcon, RocketLaunchIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
-import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement, CounterAnimation } from '@/components/scroll-animations'
+import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement } from '@/components/scroll-animations'
 
 export default function Home() {
   const categories = [
