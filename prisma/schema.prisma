@@ -1,0 +1,153 @@
+// Voidwallz Database Schema
+// Modern wallpaper website with admin panel
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  slug          String      @unique
+  description   String?
+  imagePath     String?     @map("image_path")
+  wallpaperCount Int        @default(0) @map("wallpaper_count")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  
+  wallpapers    Wallpaper[]
+  
+  @@map("categories")
+}
+
+model Tag {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  slug          String      @unique
+  wallpaperCount Int        @default(0) @map("wallpaper_count")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  
+  wallpapers    WallpaperTag[]
+  
+  @@map("tags")
+}
+
+model Wallpaper {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String?
+  filePath        String      @map("file_path")
+  thumbnailPath   String      @map("thumbnail_path")
+  categoryId      String      @map("category_id")
+  resolutions     Json        // Array of available resolutions
+  fileSize        Int         @map("file_size") // Size in bytes
+  width           Int
+  height          Int
+  format          String      // jpg, png, webp
+  downloadsCount  Int         @default(0) @map("downloads_count")
+  ratingAverage   Float       @default(0) @map("rating_average")
+  ratingCount     Int         @default(0) @map("rating_count")
+  status          WallpaperStatus @default(PUBLISHED)
+  featured        Boolean     @default(false)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  
+  category        Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tags            WallpaperTag[]
+  downloads       Download[]
+  ratings         Rating[]
+  favorites       Favorite[]
+  
+  @@map("wallpapers")
+}
+
+model WallpaperTag {
+  wallpaperId     String      @map("wallpaper_id")
+  tagId           String      @map("tag_id")
+  
+  wallpaper       Wallpaper   @relation(fields: [wallpaperId], references: [id], onDelete: Cascade)
+  tag             Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([wallpaperId, tagId])
+  @@map("wallpaper_tags")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  username      String      @unique
+  email         String      @unique
+  passwordHash  String      @map("password_hash")
+  role          UserRole    @default(USER)
+  isActive      Boolean     @default(true) @map("is_active")
+  lastLoginAt   DateTime?   @map("last_login_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  
+  downloads     Download[]
+  ratings       Rating[]
+  favorites     Favorite[]
+  
+  @@map("users")
+}
+
+model Download {
+  id            String      @id @default(cuid())
+  wallpaperId   String      @map("wallpaper_id")
+  userId        String?     @map("user_id") // Optional for anonymous downloads
+  ipAddress     String?     @map("ip_address")
+  userAgent     String?     @map("user_agent")
+  resolution    String      // The resolution that was downloaded
+  createdAt     DateTime    @default(now()) @map("created_at")
+  
+  wallpaper     Wallpaper   @relation(fields: [wallpaperId], references: [id], onDelete: Cascade)
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@map("downloads")
+}
+
+model Rating {
+  id            String      @id @default(cuid())
+  wallpaperId   String      @map("wallpaper_id")
+  userId        String      @map("user_id")
+  rating        Int         // 1-5 stars
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  
+  wallpaper     Wallpaper   @relation(fields: [wallpaperId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([wallpaperId, userId])
+  @@map("ratings")
+}
+
+model Favorite {
+  id            String      @id @default(cuid())
+  wallpaperId   String      @map("wallpaper_id")
+  userId        String      @map("user_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  
+  wallpaper     Wallpaper   @relation(fields: [wallpaperId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([wallpaperId, userId])
+  @@map("favorites")
+}
+
+enum WallpaperStatus {
+  DRAFT
+  PUBLISHED
+  FEATURED
+  ARCHIVED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
