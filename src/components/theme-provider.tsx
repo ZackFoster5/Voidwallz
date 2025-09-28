@@ -32,14 +32,7 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement
-    
-    // Remove previous theme
-    root.removeAttribute('data-theme')
-    
-    // Set new theme
-    if (theme === 'light') {
-      root.setAttribute('data-theme', 'light')
-    }
+    root.setAttribute('data-theme', theme)
     
     // Store in localStorage
     localStorage.setItem('voidwallz-theme', theme)
@@ -47,11 +40,23 @@ export function ThemeProvider({
 
   useEffect(() => {
     // Load theme from localStorage on mount
-    const storedTheme = localStorage.getItem('voidwallz-theme') as Theme
-    if (storedTheme) {
-      setTheme(storedTheme)
+    const storedTheme = localStorage.getItem('voidwallz-theme') as Theme | null
+
+    if (storedTheme === 'dark') {
+      setTheme('dark')
+      return
     }
-  }, [])
+
+    if (storedTheme === 'light') {
+      setTheme(defaultTheme)
+      localStorage.setItem('voidwallz-theme', defaultTheme)
+      return
+    }
+
+    // Fallback to default brutalist palette
+    setTheme(defaultTheme)
+    localStorage.setItem('voidwallz-theme', defaultTheme)
+  }, [defaultTheme])
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')

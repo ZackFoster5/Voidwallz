@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="dark"] {
   /* Light mode colors */
   --primary-light: oklch(0.6489 0.2370 26.9728);
   --secondary-light: oklch(0.9680 0.2110 109.7692);
