@@ -8,7 +8,6 @@ import {
   UserCircleIcon,
   PhotoIcon,
   PencilSquareIcon,
-  EnvelopeIcon,
   ShieldCheckIcon,
   LockClosedIcon,
   KeyIcon,

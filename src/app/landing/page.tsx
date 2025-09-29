@@ -298,32 +298,50 @@ export default function LandingPage() {
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-5xl font-bold mb-6 font-mono uppercase tracking-wide">
                 JOIN THE COMMUNITY
-                {
-                  question: "Can I cancel my subscription anytime?",
-                  answer: "Yes! You can cancel your subscription at any time. You&apos;ll continue to have access to premium features until the end of your billing period."
-                },
+              </h2>
+              <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                Get early access to new collections, exclusive wallpapers, and be part of our growing community.
+              </p>
             </div>
           </FadeInUp>
 
           <FadeInUp delay={0.2}>
             <div className="max-w-md mx-auto">
-{{ ... }}
+              {isSubmitted ? (
+                <div className="card-brutalist p-8 bg-background text-foreground text-center">
+                  <CheckIcon className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold font-mono uppercase mb-2">SUCCESS!</h3>
+                  <p className="text-foreground/70">
+                    Welcome to Voidwallz! We&apos;ll be in touch soon.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSignUp} className="space-y-6">
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="USERNAME"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
                       className={cn(
                         "w-full px-4 py-4 border-2 border-background bg-background text-gray-900",
                         "placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900",
                         "shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold"
                       )}
-                    {
-                  question: "Do you offer refunds?",
-                  answer: "Yes, we offer a 30-day money-back guarantee. If you&apos;re not satisfied, contact us for a full refund."
-                },
-              placeholder="EMAIL ADDRESS"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="EMAIL ADDRESS"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       className={cn(
                         "w-full px-4 py-4 border-2 border-background bg-background text-gray-900",
-{{ ... }}
+                        "placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900",
                         "shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold"
                       )}
                     />

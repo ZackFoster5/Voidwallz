@@ -533,17 +533,27 @@ export default function AdminPage() {
                     </label>
                     {newWallpaper.previewUrl && (
                       <div className="md:col-span-6 border-2 border-foreground p-3 flex items-center gap-3 bg-card/40">
-                        <Image
-                          src={newWallpaper.previewUrl}
-                          alt="New wallpaper preview"
-                          width={96}
-                          height={64}
-                          unoptimized
-                          className="w-24 h-16 object-cover border border-foreground"
-                        />
-                        <div className="text-xs font-mono uppercase tracking-wide text-foreground/70">
-                          Preview uses a local object URL. Connect file uploads to storage to persist assets.
-                        </div>
+                        {newWallpaper.previewUrl.startsWith('blob:') ? (
+                          <img
+                            src={newWallpaper.previewUrl}
+                            alt="New wallpaper preview"
+                            className="w-24 h-16 object-cover border border-foreground"
+                          />
+                        ) : (
+                          <Image
+                            src={newWallpaper.previewUrl}
+                            alt="New wallpaper preview"
+                            width={96}
+                            height={64}
+                            unoptimized
+                            className="w-24 h-16 object-cover border border-foreground"
+                          />
+                        )}
+                        {newWallpaper.previewUrl.startsWith('blob:') && (
+                          <div className="text-xs font-mono uppercase tracking-wide text-foreground/70">
+                            Preview uses a local object URL. Connect file uploads to storage to persist assets.
+                          </div>
+                        )}
                       </div>
                     )}
                     <button
