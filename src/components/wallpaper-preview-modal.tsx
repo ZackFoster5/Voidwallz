@@ -42,6 +42,8 @@ export function WallpaperPreviewModal({
   const [activeTab, setActiveTab] = useState<'details' | 'info'>('details')
   const [colorPalette, setColorPalette] = useState<ColorPalette | null>(null)
   const [isExtractingColors, setIsExtractingColors] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState<number>(0)
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -78,18 +80,70 @@ export function WallpaperPreviewModal({
 
   if (!wallpaper) return null
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     try {
+      setIsDownloading(true)
+      setDownloadProgress(0)
+
       const filename = `${wallpaper.slug || wallpaper.title}`.replace(/[^a-z0-9-_]+/gi, '_') + '.jpg'
       const url = `/api/download?url=${encodeURIComponent(wallpaper.thumbnailPath)}&filename=${encodeURIComponent(filename)}`
+
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+
+      if (!res.body) {
+        // Fallback: open direct link if streaming not available
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        setIsDownloading(false)
+        return
+      }
+
+      const contentType = res.headers.get('content-type') || 'application/octet-stream'
+      const total = Number(res.headers.get('content-length') || 0)
+
+      const reader = res.body.getReader()
+      const chunks: Uint8Array[] = []
+      let received = 0
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        if (value) {
+          chunks.push(value)
+          received += value.length
+          if (total > 0) {
+            setDownloadProgress(Math.min(100, Math.round((received / total) * 100)))
+          } else {
+            // Indeterminate; show pseudo-progress up to 90%
+            setDownloadProgress((prev) => Math.min(90, prev + 1))
+          }
+        }
+      }
+
+      const blob = new Blob(chunks, { type: contentType })
+      const objectUrl = URL.createObjectURL(blob)
+
       const a = document.createElement('a')
-      a.href = url
+      a.href = objectUrl
       a.download = filename
       document.body.appendChild(a)
       a.click()
       a.remove()
+      URL.revokeObjectURL(objectUrl)
+
+      setDownloadProgress(100)
     } catch (e) {
       console.error('Download failed', e)
+    } finally {
+      setTimeout(() => {
+        setIsDownloading(false)
+        setDownloadProgress(0)
+      }, 600)
     }
   }
 
@@ -185,6 +239,20 @@ export function WallpaperPreviewModal({
             <div className="flex flex-col lg:flex-row">
               {/* Image Section */}
               <div className="flex-1 relative bg-background flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
+                {/* Download progress */}
+                {isDownloading && (
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[80%] max-w-xl">
+                    <div className="border-2 border-foreground bg-card p-2 shadow-[3px_3px_0px_0px_var(--color-foreground)]">
+                      <div className="text-xs font-mono uppercase tracking-wide mb-1">Downloading… {downloadProgress}%</div>
+                      <div className="h-2 bg-background border border-foreground">
+                        <div
+                          className="h-full bg-primary"
+                          style={{ width: `${downloadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {(!imageLoaded || isExtractingColors) && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex flex-col items-center space-y-3">
@@ -247,7 +315,8 @@ export function WallpaperPreviewModal({
                     onClick={handleDownload}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                    disabled={isDownloading}
+                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)] disabled:opacity-50"
                   >
                     <ArrowDownTrayIcon className="w-5 h-5" />
                   </motion.button>
