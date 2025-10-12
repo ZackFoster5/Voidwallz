@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import GalleryClient from "../gallery/gallery-client";
 import { normalizeCloudinaryResource, searchCloudinaryFolder } from "@/lib/cloudinary";
 
@@ -25,6 +26,8 @@ export default async function DesktopPage() {
   }));
 
   return (
-    <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="desktop" title="DESKTOP" />
+    <Suspense fallback={<div className="p-8 text-center">Loading desktop gallery…</div>}>
+      <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="desktop" title="DESKTOP" />
+    </Suspense>
   );
 }

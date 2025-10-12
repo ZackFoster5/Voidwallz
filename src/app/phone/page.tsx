@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import GalleryClient from "../gallery/gallery-client";
 import { normalizeCloudinaryResource, searchCloudinaryFolder } from "@/lib/cloudinary";
 
@@ -25,6 +26,8 @@ export default async function PhonePage() {
   }));
 
   return (
-    <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="mobile" title="PHONE" />
+    <Suspense fallback={<div className="p-8 text-center">Loading phone gallery…</div>}>
+      <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="mobile" title="PHONE" />
+    </Suspense>
   );
 }
