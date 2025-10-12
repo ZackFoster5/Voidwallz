@@ -116,7 +116,7 @@ export default function Home() {
                       'hover:translate-x-1 hover:translate-y-1'
                     )}
                   >
-                    <span>BROWSE GALLERY</span>
+                    <span>BROWSE WALLPAPERS</span>
                     <ArrowRightIcon className="w-5 h-5" />
                   </Link>
 
