@@ -79,9 +79,18 @@ export function WallpaperPreviewModal({
   if (!wallpaper) return null
 
   const handleDownload = () => {
-    // Simulate download
-    console.log('Downloading:', wallpaper.title)
-    // In real app, this would trigger actual download
+    try {
+      const filename = `${wallpaper.slug || wallpaper.title}`.replace(/[^a-z0-9-_]+/gi, '_') + '.jpg'
+      const url = `/api/download?url=${encodeURIComponent(wallpaper.thumbnailPath)}&filename=${encodeURIComponent(filename)}`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    } catch (e) {
+      console.error('Download failed', e)
+    }
   }
 
   const handleShare = async () => {
@@ -233,6 +242,14 @@ export function WallpaperPreviewModal({
                     className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
                   >
                     <ShareIcon className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    onClick={handleDownload}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                  >
+                    <ArrowDownTrayIcon className="w-5 h-5" />
                   </motion.button>
                 </div>
               </div>

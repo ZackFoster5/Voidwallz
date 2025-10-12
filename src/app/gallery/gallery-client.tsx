@@ -369,13 +369,6 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
                         >
                           <EyeIcon className="w-5 h-5" />
                         </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200"
-                        >
-                          <ArrowDownTrayIcon className="w-5 h-5" />
-                        </motion.button>
                       </div>
                     </div>
                   </div>
