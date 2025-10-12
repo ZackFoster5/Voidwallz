@@ -31,52 +31,39 @@ export default function PasswordGateClient({ accessCode = '' }: PasswordGateClie
   }
 
   return (
-    <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-8 bg-background text-foreground relative overflow-hidden">
-      {/* Brutalist decorative elements */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-primary border-4 border-foreground transform rotate-12 opacity-20"></div>
-      <div className="absolute bottom-20 right-10 w-24 h-24 bg-secondary border-4 border-foreground transform -rotate-12 opacity-20"></div>
-      <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-foreground transform rotate-45 opacity-10"></div>
-      
-      <div className="max-w-2xl mx-auto space-y-12 relative z-10">
+    <div className="min-h-screen px-4 py-12 sm:px-6 lg:px-8 bg-background text-foreground relative">
+      <div className="max-w-xl mx-auto relative z-10">
+        {/* Header */}
         <FadeInUp>
-          <div className="text-center space-y-6">
-            <div className="relative">
-              <h1 className="text-6xl md:text-8xl font-black font-mono uppercase tracking-[0.6em] relative">
-                VOIDWALLZ
-                <div className="absolute -top-2 -left-2 w-full h-full bg-primary opacity-20 transform translate-x-2 translate-y-2 -z-10"></div>
-              </h1>
-            </div>
-            <p className="text-foreground/70 font-mono text-lg uppercase tracking-[0.3em] font-bold">
-              RESTRICTED ACCESS
+          <div className="text-center space-y-4 mb-8">
+            <span className="inline-block px-4 py-1 border-2 border-foreground bg-card font-mono text-xs uppercase tracking-wide">
+              Restricted Access
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold font-mono uppercase tracking-wide">
+              Enter Access Code
+            </h1>
+            <p className="text-foreground/70 font-mono text-sm">
+              Only authorized users can continue.
             </p>
-            <div className="w-32 h-1 bg-foreground mx-auto"></div>
           </div>
         </FadeInUp>
 
-        <FadeInUp delay={0.15}>
-          <div className="card-brutalist p-12 space-y-8 relative">
-            <div className="absolute -top-4 -left-4 w-full h-full bg-foreground opacity-5 transform translate-x-4 translate-y-4 -z-10"></div>
-            
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-black font-mono uppercase tracking-[0.4em]">ENTER PASSCODE</h2>
-              <p className="text-foreground/60 font-mono text-sm uppercase tracking-wide">
-                Authentication required
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <label className="flex flex-col gap-4">
-                <span className="text-sm font-mono uppercase tracking-[0.5em] text-foreground/80 font-bold">
-                  ACCESS CODE
+        {/* Card */}
+        <FadeInUp delay={0.1}>
+          <div className="border-2 border-foreground bg-card p-6 sm:p-8 shadow-[6px_6px_0px_0px_var(--color-foreground)]">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <label className="block space-y-2">
+                <span className="block text-xs font-mono uppercase tracking-wide text-foreground/70">
+                  Access Code
                 </span>
                 <input
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   className={cn(
-                    'w-full px-6 py-4 border-4 border-foreground bg-background text-foreground',
-                    'font-mono uppercase tracking-[0.3em] text-lg font-bold shadow-[8px_8px_0px_0px_var(--color-foreground)]',
-                    'focus:outline-none focus:bg-card focus:translate-x-2 focus:translate-y-2 focus:shadow-[4px_4px_0px_0px_var(--color-foreground)]',
+                    'w-full px-4 py-3 border-2 border-foreground bg-background text-foreground',
+                    'font-mono tracking-wide shadow-[4px_4px_0px_0px_var(--color-foreground)]',
+                    'focus:outline-none focus:bg-card focus:translate-x-1 focus:translate-y-1 focus:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
                     'transition-all duration-150'
                   )}
                   placeholder="••••••••"
@@ -87,48 +74,46 @@ export default function PasswordGateClient({ accessCode = '' }: PasswordGateClie
               <button
                 type="submit"
                 className={cn(
-                  'w-full px-8 py-4 border-4 border-foreground bg-primary text-background',
-                  'font-mono text-lg font-black uppercase tracking-[0.4em] transition-all duration-150',
-                  'shadow-[8px_8px_0px_0px_var(--color-foreground)]',
-                  'hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_0px_var(--color-foreground)]',
-                  'active:translate-x-4 active:translate-y-4 active:shadow-none'
+                  'w-full px-6 py-3 border-2 border-foreground bg-primary text-background',
+                  'font-mono font-bold uppercase tracking-wide',
+                  'shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
+                  'active:translate-x-2 active:translate-y-2 active:shadow-none transition-all duration-150'
                 )}
               >
-                UNLOCK ACCESS
+                Unlock
               </button>
             </form>
 
-            {status === 'success' && (
-              <div className="border-4 border-foreground bg-primary/20 text-primary font-mono text-sm uppercase tracking-wide px-6 py-4 font-bold">
-                ACCESS GRANTED. PROCEED TO{' '}
-                <Link href="/gallery" className="underline hover:text-foreground transition-colors">
-                  GALLERY
-                </Link>
-                .
-              </div>
-            )}
+            {/* messages */}
+            <div className="mt-6 space-y-3">
+              {status === 'success' && (
+                <div className="border-2 border-foreground bg-primary/20 text-primary font-mono text-sm uppercase tracking-wide px-4 py-3">
+                  Access granted. Continue to{' '}
+                  <Link href="/gallery" className="underline hover:text-foreground">
+                    Gallery
+                  </Link>
+                  .
+                </div>
+              )}
 
-            {status === 'error' && (
-              <div className="border-4 border-red-500 bg-red-500/20 text-red-500 font-mono text-sm uppercase tracking-wide px-6 py-4 font-bold">
-                [ERROR] INCORRECT CODE. TRY AGAIN.
-              </div>
-            )}
+              {status === 'error' && (
+                <div className="border-2 border-red-500 bg-red-500/20 text-red-500 font-mono text-sm uppercase tracking-wide px-4 py-3">
+                  Incorrect code. Try again.
+                </div>
+              )}
 
-            {!accessCode && (
-              <div className="border-4 border-yellow-500 bg-yellow-500/20 text-yellow-500 font-mono text-xs uppercase tracking-wide px-6 py-4 font-bold">
-                [WARNING] NO ACCESS CODE CONFIGURED
-              </div>
-            )}
-          </div>
-        </FadeInUp>
+              {!accessCode && (
+                <div className="border-2 border-yellow-500 bg-yellow-500/20 text-yellow-500 font-mono text-xs uppercase tracking-wide px-4 py-3">
+                  Warning: No access code configured.
+                </div>
+              )}
+            </div>
 
-        {/* Additional brutalist elements */}
-        <FadeInUp delay={0.3}>
-          <div className="flex justify-center space-x-4">
-            <div className="w-4 h-4 bg-foreground"></div>
-            <div className="w-4 h-4 bg-primary"></div>
-            <div className="w-4 h-4 bg-secondary"></div>
-            <div className="w-4 h-4 bg-foreground"></div>
+            <div className="mt-6 text-center">
+              <Link href="/" className="font-mono text-xs underline text-foreground/70 hover:text-foreground">
+                Back to Home
+              </Link>
+            </div>
           </div>
         </FadeInUp>
       </div>
