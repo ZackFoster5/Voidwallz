@@ -7,26 +7,40 @@ import { FadeInUp } from '@/components/scroll-animations'
 
 type GateState = 'idle' | 'success' | 'error'
 
-interface PasswordGateClientProps {
-  accessCode?: string
-}
+interface LoginClientProps {}
 
-export default function PasswordGateClient({ accessCode = '' }: PasswordGateClientProps) {
+export default function LoginClient({}: LoginClientProps) {
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<GateState>('idle')
+  const [message, setMessage] = useState<string | null>(null)
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setStatus('idle')
+    setMessage(null)
 
-    if (!accessCode) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setStatus('error')
+        setMessage(data.error || 'Login failed')
+        return
+      }
       setStatus('success')
-      return
-    }
-
-    if (password.trim() === accessCode) {
-      setStatus('success')
-    } else {
+      setMessage('Logged in successfully')
+      // Redirect to profile after a short delay
+      setTimeout(() => {
+        window.location.href = '/profile'
+      }, 600)
+    } catch (e) {
       setStatus('error')
+      setMessage('Network error')
     }
   }
 
@@ -54,7 +68,25 @@ export default function PasswordGateClient({ accessCode = '' }: PasswordGateClie
             <form onSubmit={handleSubmit} className="space-y-6">
               <label className="block space-y-2">
                 <span className="block text-xs font-mono uppercase tracking-wide text-foreground/70">
-                  Access Code
+                  Email or Username
+                </span>
+                <input
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  className={cn(
+                    'w-full px-4 py-3 border-2 border-foreground bg-background text-foreground',
+                    'font-mono tracking-wide shadow-[4px_4px_0px_0px_var(--color-foreground)]',
+                    'focus:outline-none focus:bg-card focus:translate-x-1 focus:translate-y-1 focus:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
+                    'transition-all duration-150'
+                  )}
+                  placeholder="you@example.com or username"
+                  autoComplete="username"
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="block text-xs font-mono uppercase tracking-wide text-foreground/70">
+                  Password
                 </span>
                 <input
                   type="password"
@@ -85,33 +117,21 @@ export default function PasswordGateClient({ accessCode = '' }: PasswordGateClie
             </form>
 
             {/* messages */}
-            <div className="mt-6 space-y-3">
-              {status === 'success' && (
-                <div className="border-2 border-foreground bg-primary/20 text-primary font-mono text-sm uppercase tracking-wide px-4 py-3">
-                  Access granted. Continue to{' '}
-                  <Link href="/gallery" className="underline hover:text-foreground">
-                    Gallery
-                  </Link>
-                  .
-                </div>
-              )}
+            {message && (
+              <div className={cn(
+                'mt-6 border-2 px-4 py-3 font-mono text-sm uppercase tracking-wide',
+                status === 'success' ? 'border-foreground bg-primary/20 text-primary' : 'border-red-500 bg-red-500/20 text-red-500'
+              )}>
+                {message}
+              </div>
+            )}
 
-              {status === 'error' && (
-                <div className="border-2 border-red-500 bg-red-500/20 text-red-500 font-mono text-sm uppercase tracking-wide px-4 py-3">
-                  Incorrect code. Try again.
-                </div>
-              )}
-
-              {!accessCode && (
-                <div className="border-2 border-yellow-500 bg-yellow-500/20 text-yellow-500 font-mono text-xs uppercase tracking-wide px-4 py-3">
-                  Warning: No access code configured.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center flex items-center justify-between">
               <Link href="/" className="font-mono text-xs underline text-foreground/70 hover:text-foreground">
                 Back to Home
+              </Link>
+              <Link href="/signup" className="font-mono text-xs underline text-foreground/70 hover:text-foreground">
+                Create account
               </Link>
             </div>
           </div>
