@@ -5,7 +5,8 @@ import { normalizeCloudinaryResource, searchCloudinaryFolder } from "@/lib/cloud
 export const revalidate = 0;
 
 export default async function PhonePage() {
-  const result = await searchCloudinaryFolder("wallpapers phone", { maxResults: 120 });
+  const folder = process.env.CLOUDINARY_MOBILE_FOLDER || "wallpapers phone";
+  const result = await searchCloudinaryFolder(folder, { maxResults: 120 });
   const normalized = result.resources.map((r, i) => normalizeCloudinaryResource(r, i));
 
   const baseWallpapers = normalized.map((n) => ({

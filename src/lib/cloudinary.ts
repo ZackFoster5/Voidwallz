@@ -244,7 +244,8 @@ export async function searchCloudinaryFolder(
   )
 
   const body = {
-    expression: `resource_type:image AND folder="${folder}"`,
+    // Match images directly in the folder and any nested subfolders
+    expression: `resource_type:image AND (folder="${folder}" OR public_id:"${folder}/*")`,
     max_results: options.maxResults ?? 100,
     next_cursor: options.nextCursor,
   }
