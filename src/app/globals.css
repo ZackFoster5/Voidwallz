@@ -13,10 +13,10 @@
   /* Dark mode colors */
   --primary-dark: oklch(0.7044 0.1872 23.1858);
   --secondary-dark: oklch(0.9691 0.2005 109.6228);
-  --background-dark: oklch(0.08 0.02 0);
+  --background-dark: oklch(0 0 0);
   --foreground-dark: oklch(0.92 0.02 0);
-  --card-dark: oklch(0.12 0.02 0);
-  --border-dark: oklch(0.25 0.02 0);
+  --card-dark: oklch(0.05 0 0);
+  --border-dark: oklch(0.20 0 0);
   
   /* Default to dark mode */
   --primary: var(--primary-dark);

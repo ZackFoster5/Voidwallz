@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckIcon, StarIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { StarIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { CheckIcon as CheckSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement } from '@/components/scroll-animations'

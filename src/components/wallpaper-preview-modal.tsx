@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { XMarkIcon, ArrowDownTrayIcon, HeartIcon, ShareIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { cn } from '@/lib/utils'
-import { extractColorsFromImage, generateCSSVariables, type ColorPalette } from '@/lib/color-extractor'
+import { type ColorPalette } from '@/lib/color-extractor'
 
 interface Wallpaper {
   id: string
@@ -70,32 +70,11 @@ export function WallpaperPreviewModal({
     }
   }, [isOpen])
 
-  // Extract colors when wallpaper changes
+  // Disable dynamic color extraction for higher contrast and consistency
   useEffect(() => {
-    if (wallpaper && isOpen) {
-      setIsExtractingColors(true)
-      setColorPalette(null)
-      
-      extractColorsFromImage(wallpaper.thumbnailPath)
-        .then(palette => {
-          setColorPalette(palette)
-          setIsExtractingColors(false)
-        })
-        .catch(error => {
-          console.error('Color extraction failed:', error)
-          setIsExtractingColors(false)
-          // Set fallback palette - soft and eye-friendly
-          setColorPalette({
-            primary: '#6366f1', // Softer indigo
-            secondary: '#8b5cf6', // Muted purple
-            accent: '#f59e0b', // Warm amber
-            background: '#f8fafc', // Very light gray
-            text: '#1e293b', // Soft dark gray
-            textSecondary: '#475569' // Medium gray
-          })
-        })
-    }
-  }, [wallpaper?.id, wallpaper?.thumbnailPath, isOpen])
+    setIsExtractingColors(false)
+    setColorPalette(null)
+  }, [wallpaper?.id, isOpen])
 
   if (!wallpaper) return null
 
@@ -150,14 +129,6 @@ export function WallpaperPreviewModal({
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative max-w-6xl w-full max-h-[90vh] bg-background border-4 border-foreground shadow-[8px_8px_0px_0px_var(--color-foreground)] overflow-hidden"
-            style={colorPalette ? {
-              ...generateCSSVariables(colorPalette),
-              backgroundColor: colorPalette.background,
-              borderColor: colorPalette.primary,
-              boxShadow: `8px 8px 0px 0px ${colorPalette.primary}`
-            } : {
-              backgroundColor: 'hsl(var(--background))'
-            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -204,22 +175,13 @@ export function WallpaperPreviewModal({
 
             <div className="flex flex-col lg:flex-row">
               {/* Image Section */}
-              <div className="flex-1 relative bg-black flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
+              <div className="flex-1 relative bg-background flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
                 {(!imageLoaded || isExtractingColors) && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex flex-col items-center space-y-3">
                       <div 
                         className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"
-                        style={colorPalette ? { borderColor: colorPalette.primary, borderTopColor: 'transparent' } : {}}
                       ></div>
-                      {isExtractingColors && (
-                        <div 
-                          className="text-sm font-mono text-primary"
-                          style={colorPalette ? { color: colorPalette.primary } : {}}
-                        >
-                          Analyzing colors...
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}

@@ -1,113 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import type { Prisma } from '@prisma/client'
+import {
+  normalizeCloudinaryResource,
+  searchCloudinaryFolder,
+} from '@/lib/cloudinary'
+
+type TargetPrefix = {
+  prefix: string
+  deviceType: 'desktop' | 'mobile'
+}
+
+function toTarget(prefix: string): TargetPrefix {
+  const normalized = prefix.endsWith('/') ? prefix : `${prefix}/`
+  const lower = normalized.toLowerCase()
+  return {
+    prefix: normalized,
+    deviceType: lower.includes('phone') ? 'mobile' : 'desktop',
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    
-    // Pagination
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const skip = (page - 1) * limit
 
-    // Filters
-    const category = searchParams.get('category')
-    const tag = searchParams.get('tag')
-    const status = searchParams.get('status') || 'PUBLISHED'
-    const featured = searchParams.get('featured')
-    const search = searchParams.get('search')
-    
-    // Sorting
-    const sortBy = searchParams.get('sortBy') || 'createdAt'
-    const sortOrder = searchParams.get('sortOrder') || 'desc'
+    const limit = parseInt(searchParams.get('limit') || '100')
+    const cursor = searchParams.get('cursor') || undefined
+    const folderParam = searchParams.get('folder')
+    const prefixParam = searchParams.get('prefix')
 
-    // Build where clause
-    const where: Prisma.WallpaperWhereInput = {
-      status: status as Prisma.WallpaperStatus,
-    }
+    let targets: TargetPrefix[]
 
-    if (category) {
-      where.category = {
-        slug: category
-      }
-    }
-
-    if (tag) {
-      where.tags = {
-        some: {
-          tag: {
-            slug: tag
-          }
-        }
-      }
-    }
-
-    if (featured === 'true') {
-      where.featured = true
-    }
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { some: { tag: { name: { contains: search, mode: 'insensitive' } } } } }
+    if (prefixParam) {
+      targets = [toTarget(prefixParam)]
+    } else if (folderParam) {
+      targets = [toTarget(folderParam)]
+    } else {
+      targets = [
+        toTarget('wallpapers desktop'),
+        toTarget('wallpapers phone'),
       ]
     }
 
-    // Build orderBy clause
-    const orderBy: Prisma.WallpaperOrderByWithRelationInput = {}
-    if (sortBy === 'downloads') {
-      orderBy.downloadsCount = sortOrder as 'asc' | 'desc'
-    } else if (sortBy === 'rating') {
-      orderBy.ratingAverage = sortOrder as 'asc' | 'desc'
-    } else {
-      orderBy.createdAt = sortOrder as 'asc' | 'desc'
-    }
+    const results = await Promise.all(
+      targets.map(async (target) => {
+        const folderName = target.prefix.replace(/\/$/, '')
+        const response = await searchCloudinaryFolder(folderName, {
+          maxResults: limit,
+          nextCursor: cursor,
+        })
 
-    // Fetch wallpapers
-    const [wallpapers, total] = await Promise.all([
-      db.wallpaper.findMany({
-        where,
-        orderBy,
-        skip,
-        take: limit,
-        include: {
-          category: true,
-          tags: {
-            include: {
-              tag: true
-            }
-          },
-          _count: {
-            select: {
-              downloads: true,
-              ratings: true,
-              favorites: true
-            }
-          }
+        console.log('[API /wallpapers] fetched', {
+          folder: folderName,
+          count: response.resources.length,
+          next_cursor: response.next_cursor,
+        })
+
+        return {
+          ...target,
+          resources: response.resources,
+          nextCursor: response.next_cursor,
         }
-      }),
-      db.wallpaper.count({ where })
-    ])
+      })
+    )
 
-    const totalPages = Math.ceil(total / limit)
+    let sequenceIndex = 0
+
+    const wallpapers = results.flatMap(({ resources, deviceType }) =>
+      resources.map((resource) => {
+        const normalized = normalizeCloudinaryResource(resource, sequenceIndex++)
+        return {
+          id: normalized.id,
+          displayId: normalized.displayId,
+          title: normalized.title,
+          slug: normalized.slug,
+          thumbnailPath: normalized.thumbnailPath,
+          width: normalized.width,
+          height: normalized.height,
+          category: normalized.category,
+          tags: normalized.tags,
+          downloads: 0,
+          views: 0,
+          featured: false,
+          resolution: normalized.resolution,
+          deviceType,
+          createdAt: normalized.createdAt,
+          bytes: normalized.bytes,
+          format: normalized.format,
+          folder: normalized.folder,
+        }
+      })
+    )
+
+    // Sort by creation date descending so newest appear first
+    wallpapers.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bTime - aTime
+    })
 
     return NextResponse.json({
       wallpapers,
       pagination: {
-        page,
         limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
+        nextCursor: results.length === 1 ? results[0].nextCursor ?? null : null,
+      },
     })
   } catch (error) {
-    console.error('Error fetching wallpapers:', error)
+    console.error('Error fetching Cloudinary wallpapers:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch wallpapers' },
+      { error: 'Failed to fetch wallpapers from Cloudinary' },
       { status: 500 }
     )
   }

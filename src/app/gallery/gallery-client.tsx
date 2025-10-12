@@ -34,15 +34,17 @@ export type GalleryWallpaper = {
 
 type GalleryClientProps = {
   baseWallpapers: GalleryWallpaper[]
+  fixedDevice?: 'desktop' | 'mobile'
+  title?: string
 }
 
-export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
+export default function GalleryClient({ baseWallpapers, fixedDevice, title }: GalleryClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [favorites, setFavorites] = useState<string[]>([])
   const [sortBy, setSortBy] = useState('featured')
-  const [deviceFilter, setDeviceFilter] = useState<'desktop' | 'mobile'>('desktop')
+  const [deviceFilter, setDeviceFilter] = useState<'desktop' | 'mobile'>(fixedDevice ?? 'desktop')
   const [previewWallpaper, setPreviewWallpaper] = useState<GalleryWallpaper | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [storedWallpapers, setStoredWallpapers] = useState<WallpaperEntry[]>([])
@@ -54,11 +56,17 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
     if (paramsCategory) {
       setSelectedCategory(paramsCategory.toLowerCase())
     }
+
+    if (fixedDevice) {
+      setDeviceFilter(fixedDevice)
+      return
+    }
+
     const paramsDevice = searchParams.get('device')
     if (paramsDevice === 'desktop' || paramsDevice === 'mobile') {
       setDeviceFilter(paramsDevice)
     }
-  }, [searchParams])
+  }, [searchParams, fixedDevice])
 
   useEffect(() => {
     const handler = window.setTimeout(() => {
@@ -161,14 +169,14 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto">
         <FadeInUp>
           <div className="text-center mb-12">
             <div className="h-[150px] md:h-[200px] flex items-center justify-center mb-4">
-              <TextHoverEffect text="GALLERY" />
+              <TextHoverEffect text={(title ?? (fixedDevice === 'mobile' ? 'PHONE' : fixedDevice === 'desktop' ? 'DESKTOP' : 'GALLERY'))} />
             </div>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              Explore our complete collection of high-quality wallpapers
+              {fixedDevice === 'mobile' ? 'Phone wallpapers' : fixedDevice === 'desktop' ? 'Desktop wallpapers' : 'Explore our complete collection of high-quality wallpapers'}
             </p>
           </div>
         </FadeInUp>
@@ -183,25 +191,31 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div className="flex flex-col gap-3 md:flex-1">
                   <div className="flex flex-wrap items-center gap-3">
-                    {(['desktop', 'mobile'] as ('desktop' | 'mobile')[]).map((device) => (
-                      <button
-                        key={device}
-                        onClick={() => {
-                          setDeviceFilter(device)
-                          const params = new URLSearchParams(window.location.search)
-                          params.set('device', device)
-                          router.replace(`/gallery${params.toString() ? `?${params.toString()}` : ''}`)
-                        }}
-                        className={cn(
-                          'px-5 py-2 border-2 border-foreground font-mono uppercase tracking-wide text-xs transition-transform duration-150',
-                          'shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px]',
-                          deviceFilter === device ? 'bg-primary text-background' : 'bg-card hover:bg-primary hover:text-background'
-                        )}
-                        type="button"
-                      >
-                        {device === 'desktop' ? 'Desktop wallpapers' : 'Mobile wallpapers'}
-                      </button>
-                    ))}
+                    {!fixedDevice ? (
+                      (['desktop', 'mobile'] as ('desktop' | 'mobile')[]).map((device) => (
+                        <button
+                          key={device}
+                          onClick={() => {
+                            setDeviceFilter(device)
+                            const params = new URLSearchParams(window.location.search)
+                            params.set('device', device)
+                            router.replace(`/gallery${params.toString() ? `?${params.toString()}` : ''}`)
+                          }}
+                          className={cn(
+                            'px-5 py-2 border-2 border-foreground font-mono uppercase tracking-wide text-xs transition-transform duration-150',
+                            'shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px]',
+                            deviceFilter === device ? 'bg-primary text-background' : 'bg-card hover:bg-primary hover:text-background'
+                          )}
+                          type="button"
+                        >
+                          {device === 'desktop' ? 'Desktop wallpapers' : 'Mobile wallpapers'}
+                        </button>
+                      ))
+                    ) : (
+                      <span className="px-5 py-2 border-2 border-foreground bg-card font-mono uppercase tracking-wide text-xs">
+                        {fixedDevice === 'mobile' ? 'Phone wallpapers' : 'Desktop wallpapers'}
+                      </span>
+                    )}
                   </div>
 
                   <div className="relative w-full">
@@ -288,20 +302,20 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
           </div>
         </FadeInUp>
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
           {filteredWallpapers.map((wallpaper) => (
             <StaggerItem key={wallpaper.id}>
-              <div className="group relative">
+              <div className="group relative h-full">
                 <div
                   className={cn(
-                    "card-brutalist p-0 overflow-hidden transition-all duration-300",
+                    "card-brutalist p-0 overflow-hidden transition-all duration-300 h-full flex flex-col",
                     "group-hover:translate-x-[-2px] group-hover:translate-y-[-2px]"
                   )}
                 >
                   <div
                     className={cn(
                       'relative overflow-hidden',
-                      wallpaper.deviceType === 'mobile' ? 'aspect-[9/16]' : 'aspect-[16/9]'
+                      'aspect-[4/5]'
                     )}
                   >
                     <Image
@@ -310,7 +324,7 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
                       fill
                       unoptimized={wallpaper.thumbnailPath.startsWith('blob:')}
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, 16vw"
                     />
 
                     {wallpaper.featured && (
@@ -366,8 +380,8 @@ export default function GalleryClient({ baseWallpapers }: GalleryClientProps) {
                     </div>
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="font-bold font-mono uppercase tracking-wide mb-2 text-sm">
+                  <div className="p-4 mt-auto">
+                    <h3 className="font-bold font-mono uppercase tracking-wide mb-2 text-sm line-clamp-1">
                       {wallpaper.title}
                     </h3>
                     <div className="flex items-center justify-between text-xs text-foreground/70 font-mono">

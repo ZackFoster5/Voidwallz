@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sphereGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 256) rotate(90) scale(220)">
+      <stop offset="0" stop-color="#3D4A5A"/>
+      <stop offset="0.4" stop-color="#1B2335"/>
+      <stop offset="0.75" stop-color="#0E141F"/>
+      <stop offset="1" stop-color="#05070B"/>
+    </radialGradient>
+    <linearGradient id="ringGradient" x1="128" y1="80" x2="448" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F1F3F6"/>
+      <stop offset="1" stop-color="#C5CAD1"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="210" fill="url(#sphereGradient)"/>
+  <path d="M424 128C380 76 320 48 256 48C141.125 48 48 141.125 48 256C48 370.875 141.125 464 256 464C310 464 359.5 445 400 413L369 374C336 399 297 412 256 412C171.425 412 104 344.575 104 260C104 175.425 171.425 108 256 108C298 108 336.5 123 368 151L424 128Z" fill="url(#ringGradient)"/>
+</svg>

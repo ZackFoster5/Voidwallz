@@ -125,3 +125,8 @@ export function getColorFromString(str: string): string {
   const hue = hash % 360
   return `hsl(${hue}, 70%, 60%)`
 }
+
+export function formatVoidwallzId(index: number, prefix = 'Voidwallz'): string {
+  const sequence = String(index + 1).padStart(3, '0')
+  return `${prefix}${sequence}`
+}

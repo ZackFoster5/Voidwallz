@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { HeartIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
+import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import { cn, formatNumber } from '@/lib/utils'
 
@@ -38,38 +38,12 @@ interface WallpaperCardProps {
 
 export function WallpaperCard({ wallpaper, className }: WallpaperCardProps) {
   const [isFavorited, setIsFavorited] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setIsFavorited(!isFavorited)
     // TODO: Implement favorite API call
-  }
-
-  const handleDownload = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsLoading(true)
-    
-    try {
-      // Track download
-      await fetch(`/api/download/${wallpaper.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resolution: `${wallpaper.width}x${wallpaper.height}` })
-      })
-      
-      // Trigger download
-      const link = document.createElement('a')
-      link.href = wallpaper.thumbnailPath // In production, this would be the full-size image
-      link.download = `${wallpaper.slug}.jpg`
-      link.click()
-    } catch (error) {
-      console.error('Download failed:', error)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   return (
@@ -101,7 +75,7 @@ export function WallpaperCard({ wallpaper, className }: WallpaperCardProps) {
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
           
           {/* Action Buttons */}
-          <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-2 right-2 flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               onClick={handleFavorite}
               className={cn(
@@ -114,17 +88,6 @@ export function WallpaperCard({ wallpaper, className }: WallpaperCardProps) {
               ) : (
                 <HeartIcon className="w-4 h-4" />
               )}
-            </button>
-            
-            <button
-              onClick={handleDownload}
-              disabled={isLoading}
-              className={cn(
-                "p-2 bg-background/90 border border-foreground hover:bg-primary hover:text-background transition-colors duration-200",
-                "shadow-[2px_2px_0px_0px_var(--color-foreground)] disabled:opacity-50"
-              )}
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
           </div>
         </div>

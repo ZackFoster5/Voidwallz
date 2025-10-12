@@ -16,10 +16,11 @@ export default function LandingPage() {
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    // For now, just simulate success - we'll add real auth later
     console.log('Sign up:', { email, username })
     setIsSubmitted(true)
     setTimeout(() => setIsSubmitted(false), 3000)
+    setEmail('')
+    setUsername('')
   }
 
   const features = [
