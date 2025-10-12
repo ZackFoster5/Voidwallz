@@ -45,7 +45,11 @@ export function Header() {
       {/* Mobile */}
       <MobileNav>
         <MobileNavHeader>
-          <NavbarLogo />
+          <div className="flex items-center gap-3">
+            <NavbarLogo />
+            {/* Mobile theme toggle */}
+            <ThemeToggle />
+          </div>
           <MobileNavToggle
             isOpen={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -55,6 +59,10 @@ export function Header() {
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         >
+          {/* Show theme toggle inside menu as well for easy access */}
+          <div className="py-2">
+            <ThemeToggle className="mx-auto" />
+          </div>
           {navItems.map((item) => (
             <Link
               key={item.name}
