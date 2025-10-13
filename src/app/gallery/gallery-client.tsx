@@ -386,7 +386,8 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
                     </div>
                     {wallpaper.createdAt && (
                       <div className="mt-1 text-[10px] uppercase tracking-wide text-foreground/50">
-                        Added {new Date(wallpaper.createdAt).toLocaleDateString()}
+                        {/* Use a deterministic, timezone-agnostic format to avoid SSR/CSR hydration mismatches */}
+                        Added {new Date(wallpaper.createdAt).toISOString().slice(0, 10)}
                       </div>
                     )}
                     <div className="flex flex-wrap gap-1 mt-2">

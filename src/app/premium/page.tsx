@@ -6,6 +6,7 @@ import { CheckIcon as CheckSolidIcon, StarIcon as StarSolidIcon } from '@heroico
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement } from '@/components/scroll-animations'
 import { cn } from '@/lib/utils'
+import RequireAuth from '@/components/auth/require-auth'
 
 const premiumFeatures = [
   {
@@ -81,8 +82,9 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <RequireAuth>
+      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <FadeInUp>
           <div className="text-center mb-16">
@@ -278,7 +280,8 @@ export default function PremiumPage() {
         <FloatingElement className="absolute bottom-20 right-10 opacity-20">
           <div className="w-12 h-12 bg-primary border-2 border-foreground"></div>
         </FloatingElement>
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   )
 }

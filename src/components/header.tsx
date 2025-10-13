@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Navbar,
@@ -13,15 +13,68 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
+import { supabase } from "@/lib/supabase-client";
+import SignupModal from "@/components/auth/signup-modal";
+import { UserIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 
-export function Header() {
+export default function Header({ initialIsAuthed = false, initialName = null }: { initialIsAuthed?: boolean; initialName?: string | null }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navItems = [
+  const [showSignup, setShowSignup] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(initialName);
+  const [isAuthed, setIsAuthed] = useState(initialIsAuthed);
+  const [initialized, setInitialized] = useState(false);
+
+  // Prime UI from localStorage to further reduce flicker
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('VW_AUTHED');
+      if (cached === '1') {
+        setIsAuthed(true);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+    async function load() {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+      const u = session?.user;
+      const name = u ? `${(u.user_metadata as any)?.firstName || ''} ${(u.user_metadata as any)?.lastName || ''}`.trim() || u.email : null;
+      if (!ignore) {
+        setIsAuthed(!!u);
+        setDisplayName(name);
+        setInitialized(true);
+      }
+    }
+    load();
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsAuthed(!!session);
+      try { localStorage.setItem('VW_AUTHED', session ? '1' : '0'); } catch {}
+      if (session?.user) {
+        const u = session.user as any;
+        const name = `${u?.user_metadata?.firstName || ''} ${u?.user_metadata?.lastName || ''}`.trim() || u?.email || null;
+        setDisplayName(name);
+      } else {
+        setDisplayName(null);
+      }
+      setInitialized(true);
+    });
+    return () => { sub.subscription.unsubscribe(); };
+  }, []);
+
+  const allNav = [
     { name: "Home", link: "/" },
     { name: "Phone", link: "/phone" },
     { name: "Desktop", link: "/desktop" },
     { name: "Premium", link: "/premium" },
   ];
+  const navItems = !initialized ? [] : isAuthed ? allNav : allNav.filter((n) => n.name === "Home");
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <Navbar className="top-0">
@@ -30,14 +83,35 @@ export function Header() {
         <div className="flex items-center gap-2">
           <NavbarLogo />
         </div>
-        <NavItems items={navItems} />
-        <div className="flex items-center gap-3">
-          <Link
-            href="/#signup"
-            className="hidden md:inline-flex items-center rounded-full px-4 py-2 text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]"
-          >
-            SIGN UP
-          </Link>
+        {initialized && <NavItems items={navItems} />}
+        <div className="flex items-center gap-2">
+          {isAuthed ? (
+            <>
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-foreground bg-card text-foreground hover:bg-primary hover:text-background"
+              >
+                <UserIcon className="w-4 h-4" />
+              </Link>
+              <button
+                onClick={signOut}
+                aria-label="Logout"
+                className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-foreground bg-card text-foreground hover:bg-primary hover:text-background"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            initialized && (
+              <button
+                onClick={() => setShowSignup(true)}
+                className="hidden md:inline-flex items-center rounded-full px-3 py-1.5 text-xs font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] relative z-20"
+              >
+                Sign in / Sign up
+              </button>
+            )
+          )}
           <ThemeToggle />
         </div>
       </NavBody>
@@ -63,7 +137,7 @@ export function Header() {
           <div className="py-2">
             <ThemeToggle className="mx-auto" />
           </div>
-          {navItems.map((item) => (
+          {initialized && navItems.map((item) => (
             <Link
               key={item.name}
               href={item.link}
@@ -75,15 +149,35 @@ export function Header() {
               </span>
             </Link>
           ))}
-          <Link
-            href="/#signup"
-            className="w-full rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            SIGN UP
-          </Link>
+          {isAuthed ? (
+            <div className="flex w-full gap-2">
+              <Link
+                href="/profile"
+                className="flex-1 rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Profile
+              </Link>
+              <button
+                onClick={() => { setIsMobileMenuOpen(false); signOut(); }}
+                className="flex-1 rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setShowSignup(true); setIsMobileMenuOpen(false); }}
+              className="w-full rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+            >
+              Sign in / Sign up
+            </button>
+          )}
         </MobileNavMenu>
       </MobileNav>
+
+      {/* Auth modal */}
+      <SignupModal open={showSignup} onClose={() => setShowSignup(false)} />
     </Navbar>
   );
 }

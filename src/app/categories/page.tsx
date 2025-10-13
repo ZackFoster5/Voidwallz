@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
+import RequireAuth from '@/components/auth/require-auth'
 import {
   MagnifyingGlassIcon,
   ArrowRightIcon,
@@ -293,8 +294,9 @@ export default function CategoriesPage() {
   }, [deviceCollections, searchQuery, sortBy])
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <RequireAuth>
+      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
         <FadeInUp>
           <div className="text-center mb-12">
             <div className="h-[150px] md:h-[200px] flex items-center justify-center mb-4">
@@ -466,7 +468,8 @@ export default function CategoriesPage() {
             })}
           </StaggerContainer>
         )}
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   )
 }

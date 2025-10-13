@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
+import { supabase } from '@/lib/supabase-client'
+import RequireAuth from '@/components/auth/require-auth'
 import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-animations'
 import { cn } from '@/lib/utils'
 import {
@@ -65,6 +67,29 @@ export default function ProfilePage() {
     username: mockProfile.username
   })
 
+  useEffect(() => {
+    let ignore = false
+    async function load() {
+      const { data } = await supabase.auth.getUser()
+      const u = data.user
+      if (u && !ignore) {
+        const first = (u.user_metadata as any)?.firstName || ''
+        const last = (u.user_metadata as any)?.lastName || ''
+        setProfile({
+          name: `${first} ${last}`.trim() || (u.email ?? ''),
+          email: u.email ?? '',
+          username: u.user_metadata?.username || ''
+        })
+      }
+    }
+    load()
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) window.location.href = '/'
+      else load()
+    })
+    return () => { ignore = true; sub.subscription.unsubscribe() }
+  }, [])
+
   const [actionState, setActionState] = useState<ProfileActionState>({
     isSavingProfile: false,
     isResettingPassword: false,
@@ -123,7 +148,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <RequireAuth>
+      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-12">
         {/* Header */}
         <FadeInUp>
@@ -421,5 +447,6 @@ export default function ProfilePage() {
         </FadeInUp>
       </div>
     </div>
+    </RequireAuth>
   )
 }

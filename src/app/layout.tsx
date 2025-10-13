@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/header";
+import HeaderServer from "@/components/header-server";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -58,7 +58,9 @@ export default function RootLayout({
       <body className={`${dmSans.variable} ${spaceMono.variable} antialiased`}>
         <ThemeProvider defaultTheme="dark">
           <div className="min-h-screen bg-background text-foreground">
-            <Header />
+            {/* Server-side header to remove auth flicker */}
+            {/* @ts-expect-error Server Component */}
+            <HeaderServer />
             <main>{children}</main>
           </div>
         </ThemeProvider>

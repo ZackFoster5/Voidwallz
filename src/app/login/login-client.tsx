@@ -4,13 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { FadeInUp } from '@/components/scroll-animations'
+import { supabase } from '@/lib/supabase-client'
 
 type GateState = 'idle' | 'success' | 'error'
 
 interface LoginClientProps {}
 
 export default function LoginClient({}: LoginClientProps) {
-  const [identifier, setIdentifier] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<GateState>('idle')
   const [message, setMessage] = useState<string | null>(null)
@@ -21,20 +22,19 @@ export default function LoginClient({}: LoginClientProps) {
     setMessage(null)
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
         setStatus('error')
-        setMessage(data.error || 'Login failed')
+        setMessage(error.message)
+        return
+      }
+      if (!data.session) {
+        setStatus('error')
+        setMessage('No session created')
         return
       }
       setStatus('success')
       setMessage('Logged in successfully')
-      // Redirect to profile after a short delay
       setTimeout(() => {
         window.location.href = '/profile'
       }, 600)
@@ -54,10 +54,10 @@ export default function LoginClient({}: LoginClientProps) {
               Restricted Access
             </span>
             <h1 className="text-3xl md:text-4xl font-extrabold font-mono uppercase tracking-wide">
-              Enter Access Code
+              Sign in
             </h1>
             <p className="text-foreground/70 font-mono text-sm">
-              Only authorized users can continue.
+              Enter your email and password to continue.
             </p>
           </div>
         </FadeInUp>
@@ -68,18 +68,18 @@ export default function LoginClient({}: LoginClientProps) {
             <form onSubmit={handleSubmit} className="space-y-6">
               <label className="block space-y-2">
                 <span className="block text-xs font-mono uppercase tracking-wide text-foreground/70">
-                  Email or Username
+                  Email
                 </span>
                 <input
-                  value={identifier}
-                  onChange={(event) => setIdentifier(event.target.value)}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   className={cn(
                     'w-full px-4 py-3 border-2 border-foreground bg-background text-foreground',
                     'font-mono tracking-wide shadow-[4px_4px_0px_0px_var(--color-foreground)]',
                     'focus:outline-none focus:bg-card focus:translate-x-1 focus:translate-y-1 focus:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
                     'transition-all duration-150'
                   )}
-                  placeholder="you@example.com or username"
+                  placeholder="you@example.com"
                   autoComplete="username"
                 />
               </label>
@@ -112,7 +112,7 @@ export default function LoginClient({}: LoginClientProps) {
                   'active:translate-x-2 active:translate-y-2 active:shadow-none transition-all duration-150'
                 )}
               >
-                Unlock
+                Sign in
               </button>
             </form>
 

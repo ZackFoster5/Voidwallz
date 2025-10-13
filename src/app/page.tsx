@@ -22,11 +22,10 @@ import { cn } from '@/lib/utils'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement, CounterAnimation } from '@/components/scroll-animations'
 import { PremiumBadge } from '@/components/premium-badge'
+import SignupModal from '@/components/auth/signup-modal'
 
 export default function Home() {
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showSignup, setShowSignup] = useState(false)
 
   const categories = [
     { name: 'Nature', slug: 'nature', icon: <GlobeAltIcon className="w-6 h-6" /> },
@@ -75,14 +74,6 @@ export default function Home() {
     { icon: <CheckIcon className="w-6 h-6" />, text: 'Early Access to New Content' },
   ]
 
-  const handleSignUp = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Sign up:', { email, username })
-    setIsSubmitted(true)
-    setTimeout(() => setIsSubmitted(false), 3000)
-    setEmail('')
-    setUsername('')
-  }
 
   return (
     <div className="min-h-screen">
@@ -121,7 +112,7 @@ export default function Home() {
                   </Link>
 
                   <button
-                    onClick={() => document.getElementById('signup')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => setShowSignup(true)}
                     className={cn(
                       'px-8 py-4 text-lg font-bold border-2 border-foreground bg-card hover:bg-primary hover:text-background',
                       'transition-all duration-200 inline-flex items-center space-x-2 uppercase tracking-wide',
@@ -349,64 +340,29 @@ export default function Home() {
 
           <FadeInUp delay={0.2}>
             <div className="max-w-md mx-auto">
-              {isSubmitted ? (
-                <div className="card-brutalist p-8 bg-background text-foreground text-center">
-                  <CheckIcon className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold font-mono uppercase mb-2">SUCCESS!</h3>
-                  <p className="text-foreground/70">Welcome to Voidwallz! We&#39;ll be in touch soon.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSignUp} className="space-y-6">
-                  <div>
-                    <input
-                      placeholder="USERNAME"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                      className={cn(
-                        'w-full px-4 py-4 border-2 border-background bg-background text-gray-900',
-                        'placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900',
-                        'shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold'
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="EMAIL ADDRESS"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className={cn(
-                        'w-full px-4 py-4 border-2 border-background bg-background text-gray-900',
-                        'placeholder:text-gray-700 focus:outline-none focus:bg-background focus:text-gray-900',
-                        'shadow-[4px_4px_0px_0px_var(--color-background)] font-mono uppercase tracking-wide font-bold'
-                      )}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className={cn(
-                      'w-full px-8 py-4 text-lg font-bold border-2 border-background bg-background text-primary',
-                      'hover:bg-secondary hover:border-secondary hover:text-background transition-all duration-200',
-                      'uppercase tracking-wide font-mono',
-                      'shadow-[4px_4px_0px_0px_var(--color-background)] hover:shadow-[2px_2px_0px_0px_var(--color-background)]',
-                      'hover:translate-x-1 hover:translate-y-1'
-                    )}
-                  >
-                    CREATE ACCOUNT
-                  </button>
-                </form>
-              )}
-
-              <p className="text-center text-sm opacity-70 mt-6">
-                Already have an account?{' '}
-                <Link href="/login" className="underline hover:text-secondary transition-colors">
-                  Sign in here
-                </Link>
-              </p>
+              <div className="card-brutalist p-8 bg-background text-foreground text-center">
+                <h3 className="text-xl font-bold font-mono uppercase mb-4">Create an account</h3>
+                <p className="text-foreground/70 mb-6">Use your email to sign up or continue with Google/Apple.</p>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className={cn(
+                    'w-full px-8 py-4 text-lg font-bold border-2 border-foreground bg-primary text-background',
+                    'hover:bg-secondary hover:border-secondary hover:text-background transition-all duration-200',
+                    'uppercase tracking-wide font-mono',
+                    'shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
+                    'hover:translate-x-1 hover:translate-y-1'
+                  )}
+                  type="button"
+                >
+                  Open sign up
+                </button>
+                <p className="text-center text-sm opacity-70 mt-6">
+                  Already have an account?{' '}
+                  <Link href="/login" className="underline hover:text-secondary transition-colors">
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
             </div>
           </FadeInUp>
         </div>
@@ -430,6 +386,8 @@ export default function Home() {
           </FadeInUp>
         </div>
       </section>
+      {/* Signup Modal */}
+      <SignupModal open={showSignup} onClose={() => setShowSignup(false)} />
     </div>
   )
 }

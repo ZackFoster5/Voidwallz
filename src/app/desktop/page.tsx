@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import GalleryClient from "../gallery/gallery-client";
 import { normalizeCloudinaryResource, searchCloudinaryFolder } from "@/lib/cloudinary";
+import RequireAuth from "@/components/auth/require-auth";
 
 export const revalidate = 0;
 
@@ -28,7 +29,10 @@ export default async function DesktopPage() {
 
   return (
     <Suspense fallback={<div className="p-8 text-center">Loading desktop gallery…</div>}>
-      <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="desktop" title="DESKTOP" />
+      {/* @ts-expect-error Server component embedding client guard */}
+      <RequireAuth>
+        <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="desktop" title="DESKTOP" />
+      </RequireAuth>
     </Suspense>
   );
 }
