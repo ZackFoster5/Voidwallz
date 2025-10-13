@@ -46,7 +46,7 @@ export default function SignupPage() {
       if (data?.session) {
         setStatus('success')
         setMessage('Account created — redirecting...')
-        setTimeout(() => { window.location.href = '/profile' }, 800)
+        setTimeout(() => { window.location.href = '/feed' }, 800)
       } else {
         setStatus('success')
         setMessage('Check your email to confirm your account. Then sign in.')
@@ -62,7 +62,7 @@ export default function SignupPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/profile` }
+        options: { redirectTo: `${window.location.origin}/feed` }
       })
       if (error) {
         setStatus('error')

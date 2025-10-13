@@ -1,31 +1,40 @@
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { createServerClient } from '@supabase/ssr'
-import HomeClient from './home-client'
+'use client'
 
-export default async function HomePage() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set() {},
-        remove() {},
-      },
-    }
-  )
+import Link from 'next/link'
+import { useState } from 'react'
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  StarIcon,
+  UsersIcon,
+  ArrowDownTrayIcon,
+  HeartIcon,
+  SparklesIcon,
+  GlobeAltIcon,
+  PuzzlePieceIcon,
+  DevicePhoneMobileIcon,
+  TruckIcon,
+  RocketLaunchIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/outline'
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import { cn } from '@/lib/utils'
+import { TextHoverEffect } from '@/components/ui/text-hover-effect'
+import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement, CounterAnimation } from '@/components/scroll-animations'
+import { PremiumBadge } from '@/components/premium-badge'
+import SignupModal from '@/components/auth/signup-modal'
 
-  const { data } = await supabase.auth.getSession()
-  if (data.session) {
-    redirect('/feed')
-  }
+export default function HomeClient() {
+  const [showSignup, setShowSignup] = useState(false)
 
-  return <HomeClient />
-}
+  const categories = [
+    { name: 'Nature', slug: 'nature', icon: <GlobeAltIcon className="w-6 h-6" /> },
+    { name: 'Abstract', slug: 'abstract', icon: <PuzzlePieceIcon className="w-6 h-6" /> },
+    { name: 'Gaming', slug: 'gaming', icon: <DevicePhoneMobileIcon className="w-6 h-6" /> },
+    { name: 'Cars', slug: 'cars', icon: <TruckIcon className="w-6 h-6" /> },
+    { name: 'Space', slug: 'space', icon: <RocketLaunchIcon className="w-6 h-6" /> },
+    { name: 'Minimalist', slug: 'minimalist', icon: <Squares2X2Icon className="w-6 h-6" /> },
+  ]
 
   const features = [
     {

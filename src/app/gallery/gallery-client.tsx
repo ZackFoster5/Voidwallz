@@ -36,15 +36,16 @@ type GalleryClientProps = {
   baseWallpapers: GalleryWallpaper[]
   fixedDevice?: 'desktop' | 'mobile'
   title?: string
+  initialDevice?: 'desktop' | 'mobile' | 'all'
 }
 
-export default function GalleryClient({ baseWallpapers, fixedDevice, title }: GalleryClientProps) {
+export default function GalleryClient({ baseWallpapers, fixedDevice, title, initialDevice }: GalleryClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [favorites, setFavorites] = useState<string[]>([])
   const [sortBy, setSortBy] = useState('featured')
-  const [deviceFilter, setDeviceFilter] = useState<'desktop' | 'mobile'>(fixedDevice ?? 'desktop')
+  const [deviceFilter, setDeviceFilter] = useState<'desktop' | 'mobile' | 'all'>(fixedDevice ?? (initialDevice ?? 'desktop'))
   const [previewWallpaper, setPreviewWallpaper] = useState<GalleryWallpaper | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [storedWallpapers, setStoredWallpapers] = useState<WallpaperEntry[]>([])
@@ -125,7 +126,7 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
 
     const filtered = combinedWallpapers.filter((wallpaper) => {
       const matchesCategory = selectedCategory === 'all' || wallpaper.category === selectedCategory
-      const matchesDevice = (wallpaper.deviceType ?? 'desktop') === deviceFilter
+      const matchesDevice = deviceFilter === 'all' ? true : (wallpaper.deviceType ?? 'desktop') === deviceFilter
       if (!query) return matchesCategory && matchesDevice
 
       const lowerTitle = wallpaper.title.toLowerCase()
@@ -176,7 +177,13 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
               <TextHoverEffect text={(title ?? (fixedDevice === 'mobile' ? 'PHONE' : fixedDevice === 'desktop' ? 'DESKTOP' : 'GALLERY'))} />
             </div>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              {fixedDevice === 'mobile' ? 'Phone wallpapers' : fixedDevice === 'desktop' ? 'Desktop wallpapers' : 'Explore our complete collection of high-quality wallpapers'}
+              {fixedDevice === 'mobile'
+                ? 'Phone wallpapers'
+                : fixedDevice === 'desktop'
+                ? 'Desktop wallpapers'
+                : (initialDevice === 'all'
+                  ? 'Latest wallpapers across devices'
+                  : 'Explore our complete collection of high-quality wallpapers')}
             </p>
           </div>
         </FadeInUp>
@@ -192,13 +199,17 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
                 <div className="flex flex-col gap-3 md:flex-1">
                   <div className="flex flex-wrap items-center gap-3">
                     {!fixedDevice ? (
-                      (['desktop', 'mobile'] as ('desktop' | 'mobile')[]).map((device) => (
+                      (['all', 'desktop', 'mobile'] as ('all' | 'desktop' | 'mobile')[]).map((device) => (
                         <button
                           key={device}
                           onClick={() => {
                             setDeviceFilter(device)
                             const params = new URLSearchParams(window.location.search)
-                            params.set('device', device)
+                            if (device === 'all') {
+                              params.delete('device')
+                            } else {
+                              params.set('device', device)
+                            }
                             router.replace(`/gallery${params.toString() ? `?${params.toString()}` : ''}`)
                           }}
                           className={cn(
@@ -208,7 +219,7 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title }: Ga
                           )}
                           type="button"
                         >
-                          {device === 'desktop' ? 'Desktop wallpapers' : 'Mobile wallpapers'}
+                          {device === 'all' ? 'All devices' : device === 'desktop' ? 'Desktop wallpapers' : 'Mobile wallpapers'}
                         </button>
                       ))
                     ) : (

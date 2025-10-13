@@ -36,7 +36,7 @@ export default function LoginClient({}: LoginClientProps) {
       setStatus('success')
       setMessage('Logged in successfully')
       setTimeout(() => {
-        window.location.href = '/profile'
+        window.location.href = '/feed'
       }, 600)
     } catch (e) {
       setStatus('error')

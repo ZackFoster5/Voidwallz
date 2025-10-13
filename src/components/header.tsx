@@ -63,13 +63,16 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
     return () => { sub.subscription.unsubscribe(); };
   }, []);
 
-  const allNav = [
+  const loggedOutNav = [
     { name: "Home", link: "/" },
+  ];
+  const loggedInNav = [
+    { name: "Feed", link: "/feed" },
     { name: "Phone", link: "/phone" },
     { name: "Desktop", link: "/desktop" },
     { name: "Premium", link: "/premium" },
   ];
-  const navItems = !initialized ? [] : isAuthed ? allNav : allNav.filter((n) => n.name === "Home");
+  const navItems = !initialized ? [] : (isAuthed ? loggedInNav : loggedOutNav);
 
   const signOut = async () => {
     await supabase.auth.signOut();
