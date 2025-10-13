@@ -10,7 +10,7 @@ import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-ani
 import { WallpaperPreviewModal } from '@/components/wallpaper-preview-modal'
 import { cn } from '@/lib/utils'
 import { loadStoredWallpapers, WALLPAPER_UPDATE_EVENT, type WallpaperEntry } from '@/lib/wallpaper-store'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 const baseCategories = ['all', 'nature', 'abstract', 'gaming', 'cars', 'space', 'minimalist']
 
@@ -51,6 +51,7 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title, init
   const [storedWallpapers, setStoredWallpapers] = useState<WallpaperEntry[]>([])
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const paramsCategory = searchParams.get('category')
@@ -210,7 +211,8 @@ export default function GalleryClient({ baseWallpapers, fixedDevice, title, init
                             } else {
                               params.set('device', device)
                             }
-                            router.replace(`/gallery${params.toString() ? `?${params.toString()}` : ''}`)
+                            const qs = params.toString()
+                            router.replace(`${pathname}${qs ? `?${qs}` : ''}`)
                           }}
                           className={cn(
                             'px-5 py-2 border-2 border-foreground font-mono uppercase tracking-wide text-xs transition-transform duration-150',
