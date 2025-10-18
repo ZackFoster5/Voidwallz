@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { supabase } from "@/lib/supabase-client";
 import SignupModal from "@/components/auth/signup-modal";
-import { UserIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import { Icon } from "@/components/ui/icon";
 
 export default function Header({ initialIsAuthed = false, initialName = null }: { initialIsAuthed?: boolean; initialName?: string | null }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -68,6 +68,7 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
   ];
   const loggedInNav = [
     { name: "Feed", link: "/feed" },
+    { name: "Community", link: "/community" },
     { name: "Phone", link: "/phone" },
     { name: "Desktop", link: "/desktop" },
     { name: "Premium", link: "/premium" },
@@ -95,14 +96,14 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
                 aria-label="Profile"
                 className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-foreground bg-card text-foreground hover:bg-primary hover:text-background"
               >
-                <UserIcon className="w-4 h-4" />
+                <Icon name="user" className="w-4 h-4" />
               </Link>
               <button
                 onClick={signOut}
                 aria-label="Logout"
                 className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-foreground bg-card text-foreground hover:bg-primary hover:text-background"
               >
-                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                <Icon name="logout" className="w-4 h-4" />
               </button>
             </>
           ) : (
@@ -115,7 +116,7 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
               </button>
             )
           )}
-          <ThemeToggle />
+          <ThemeToggle className="hidden md:inline-flex" />
         </div>
       </NavBody>
 
@@ -124,8 +125,7 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
         <MobileNavHeader>
           <div className="flex items-center gap-3">
             <NavbarLogo />
-            {/* Mobile theme toggle */}
-            <ThemeToggle />
+            {/* Theme toggle moved into dropdown menu on mobile */}
           </div>
           <MobileNavToggle
             isOpen={isMobileMenuOpen}

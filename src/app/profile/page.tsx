@@ -1,27 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { supabase } from '@/lib/supabase-client'
 import RequireAuth from '@/components/auth/require-auth'
 import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-animations'
 import { cn } from '@/lib/utils'
-import {
-  UserCircleIcon,
-  PhotoIcon,
-  PencilSquareIcon,
-  ShieldCheckIcon,
-  LockClosedIcon,
-  KeyIcon,
-  ArrowUpRightIcon,
-  ArrowPathIcon,
-  StarIcon,
-  CreditCardIcon,
-  CalendarDaysIcon,
-  CheckCircleIcon,
-  BellIcon,
-  DevicePhoneMobileIcon
-} from '@heroicons/react/24/outline'
+import { Icon } from '@/components/ui/icon'
+import { appendStoredWallpaper } from '@/lib/wallpaper-store'
 
 const mockProfile = {
   name: 'Nikhil Sharma',
@@ -61,6 +47,10 @@ type ProfileActionState = {
 }
 
 export default function ProfilePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<string>('')
+  
   const [profile, setProfile] = useState<ProfileFormState>({
     name: mockProfile.name,
     email: mockProfile.email,
@@ -147,6 +137,70 @@ export default function ProfilePage() {
     setNotificationPrefs((prev) => ({ ...prev, [label]: !prev[label] }))
   }
 
+  const handleWallpaperUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    setUploadProgress('Uploading image...')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      setUploadProgress('Analyzing with VoidAI...')
+      const analyzeRes = await fetch('/api/wallpapers/analyze', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!analyzeRes.ok) {
+        const error = await analyzeRes.json()
+        throw new Error(error.error || 'Failed to analyze wallpaper')
+      }
+
+      const { metadata, image } = await analyzeRes.json()
+
+      setUploadProgress('Creating wallpaper entry...')
+      
+      // Set featured until 24 hours from now
+      const featuredUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      
+      // Determine device type based on aspect ratio
+      const aspectRatio = image.width / image.height
+      const deviceType = aspectRatio > 1 ? 'desktop' : 'mobile'
+
+      const wallpaperEntry = {
+        id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        title: metadata.title,
+        category: metadata.categorySlug,
+        status: 'Published' as const,
+        curator: profile.name || 'User',
+        deviceType,
+        lastEdit: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        previewUrl: image.secureUrl,
+        featuredUntil,
+      }
+
+      appendStoredWallpaper(wallpaperEntry)
+
+      setUploadProgress('Success! Featured for 24 hours')
+      showMessage(`Wallpaper "${metadata.title}" uploaded and featured! AI generated ${metadata.tags.length} tags.`)
+
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+
+      setTimeout(() => setUploadProgress(''), 3000)
+    } catch (error: any) {
+      console.error('Upload failed:', error)
+      setUploadProgress('')
+      showMessage(`Upload failed: ${error.message}`)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
     <RequireAuth>
       <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -205,13 +259,70 @@ export default function ProfilePage() {
           </div>
         </FadeInUp>
 
+        {/* AI Upload Section */}
+        <FadeInUp delay={0.12}>
+          <div className="card-brutalist p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Icon name="sparkles" className="w-6 h-6 text-primary" />
+              <h2 className="text-xl font-bold font-mono uppercase tracking-wide">Upload Wallpaper</h2>
+              <span className="px-2 py-1 text-xs font-mono uppercase tracking-wide border border-primary text-primary">VoidAI</span>
+            </div>
+            <p className="text-sm text-foreground/70 mb-6">
+              Upload a new wallpaper and VoidAI will automatically analyze it, generate tags, and feature it on the feed for 24 hours.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <label className={cn(
+                "btn-brutalist px-6 py-3 font-mono font-bold uppercase tracking-wide inline-flex items-center gap-2 cursor-pointer",
+                isUploading && "opacity-60 cursor-not-allowed"
+              )}>
+                {isUploading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="photo" className="w-5 h-5" />
+                    <span>Select Image</span>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleWallpaperUpload}
+                  disabled={isUploading}
+                  className="sr-only"
+                />
+              </label>
+              
+              {uploadProgress && (
+                <div className="flex items-center gap-2 text-sm font-mono text-primary">
+                  <Icon name="clock" className="w-4 h-4" />
+                  <span>{uploadProgress}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-4 p-3 border-2 border-foreground/20 bg-card/50">
+              <div className="flex items-start gap-2 text-xs text-foreground/60">
+                <Icon name="information-circle" className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <p>
+                  Supported formats: JPG, PNG, WEBP. Max size: 15MB. AI will auto-generate title, description, category, and tags.
+                </p>
+              </div>
+            </div>
+          </div>
+        </FadeInUp>
+
         {/* Profile management sections */}
         <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <StaggerItem className="lg:col-span-2">
             <FadeInUp delay={0.15}>
               <form onSubmit={handleProfileSave} className="card-brutalist p-6 space-y-6">
                 <div className="flex items-center gap-3">
-                  <UserCircleIcon className="w-6 h-6" />
+                  <Icon name="user-circle" className="w-6 h-6" />
                   <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Profile Details</h3>
                 </div>
 
@@ -252,11 +363,11 @@ export default function ProfilePage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                   <div className="flex items-center gap-2 text-sm text-foreground/70">
-                    <PhotoIcon className="w-5 h-5" />
+                    <Icon name="photo" className="w-5 h-5" />
                     <span>Avatar uploads coming soon. Hook into your storage provider later.</span>
                   </div>
                   <label className="inline-flex items-center gap-2 px-4 py-2 border-2 border-foreground bg-card hover:bg-primary hover:text-background transition-colors duration-200 cursor-pointer">
-                    <PencilSquareIcon className="w-5 h-5" />
+                    <Icon name="pencil-square" className="w-5 h-5" />
                     <span className="font-mono text-sm uppercase tracking-wide">Upload avatar</span>
                     <input type="file" accept="image/*" className="sr-only" disabled />
                   </label>
@@ -280,7 +391,7 @@ export default function ProfilePage() {
             <FadeInUp delay={0.2}>
               <div className="card-brutalist p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <ShieldCheckIcon className="w-6 h-6" />
+                  <Icon name="shield" className="w-6 h-6" />
                   <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Security</h3>
                 </div>
                 <p className="text-sm text-foreground/70">
@@ -294,14 +405,14 @@ export default function ProfilePage() {
                     actionState.isResettingPassword ? 'opacity-60 cursor-not-allowed' : 'hover:bg-primary hover:text-background'
                   )}
                 >
-                  <LockClosedIcon className="w-5 h-5" />
+                  <Icon name="lock-closed" className="w-5 h-5" />
                   {actionState.isResettingPassword ? 'Sending reset…' : 'Send reset link'}
                 </button>
                 <button
                   onClick={() => showMessage('Two-factor auth placeholder. Connect to your authentication flow soon.')}
                   className="w-full btn-brutalist px-4 py-3 font-mono font-bold uppercase tracking-wide flex items-center justify-center gap-2 hover:bg-card"
                 >
-                  <KeyIcon className="w-5 h-5" />
+                  <Icon name="key" className="w-5 h-5" />
                   Configure 2FA
                 </button>
               </div>
@@ -315,7 +426,7 @@ export default function ProfilePage() {
             <FadeInUp delay={0.25}>
               <div className="card-brutalist p-6 space-y-6">
                 <div className="flex items-center gap-3">
-                  <CreditCardIcon className="w-6 h-6" />
+                  <Icon name="credit-card" className="w-6 h-6" />
                   <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Subscription</h3>
                 </div>
 
@@ -347,7 +458,7 @@ export default function ProfilePage() {
                       actionState.isUpdatingSubscription ? 'opacity-60 cursor-not-allowed' : 'hover:bg-primary hover:text-background'
                     )}
                   >
-                    <ArrowUpRightIcon className="w-5 h-5" />
+                    <Icon name="arrow-up-right" className="w-5 h-5" />
                     Upgrade plan
                   </button>
                   <button
@@ -358,7 +469,7 @@ export default function ProfilePage() {
                       actionState.isUpdatingSubscription ? 'opacity-60 cursor-not-allowed' : 'hover:bg-secondary hover:text-background'
                     )}
                   >
-                    <ArrowPathIcon className="w-5 h-5" />
+                    <Icon name="arrow-path" className="w-5 h-5" />
                     Cancel auto-renew
                   </button>
                   <button
@@ -369,7 +480,7 @@ export default function ProfilePage() {
                       actionState.isUpdatingSubscription ? 'opacity-60 cursor-not-allowed' : 'hover:bg-card'
                     )}
                   >
-                    <StarIcon className="w-5 h-5" />
+                    <Icon name="star" className="w-5 h-5" />
                     View invoices
                   </button>
                 </div>
@@ -381,7 +492,7 @@ export default function ProfilePage() {
             <FadeInUp delay={0.3}>
               <div className="card-brutalist p-6 space-y-5">
                 <div className="flex items-center gap-3">
-                  <BellIcon className="w-6 h-6" />
+                  <Icon name="bell" className="w-6 h-6" />
                   <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Notifications</h3>
                 </div>
 
@@ -414,7 +525,7 @@ export default function ProfilePage() {
         <FadeInUp delay={0.35}>
           <div className="card-brutalist p-6 space-y-6">
             <div className="flex items-center gap-3">
-              <DevicePhoneMobileIcon className="w-6 h-6" />
+              <Icon name="phone" className="w-6 h-6" />
               <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Devices & activity</h3>
             </div>
 
@@ -427,7 +538,7 @@ export default function ProfilePage() {
                 <div key={device.title} className="border-2 border-foreground bg-card p-4 space-y-2 font-mono text-sm">
                   <div className="flex items-center justify-between">
                     <span className="font-bold uppercase tracking-wide">{device.title}</span>
-                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                    <Icon name="check-circle" className="w-5 h-5 text-green-500" />
                   </div>
                   <p className="text-foreground/60 uppercase tracking-wide">{device.location}</p>
                   <p className="text-xs text-foreground/60">Status: {device.status}</p>
@@ -440,7 +551,7 @@ export default function ProfilePage() {
               onClick={() => showMessage('Device refresh simulated. Attach to a sessions endpoint when available.')}
               className="btn-brutalist px-4 py-3 font-mono font-bold uppercase tracking-wide flex items-center gap-2 hover:bg-card"
             >
-              <CalendarDaysIcon className="w-5 h-5" />
+              <Icon name="calendar-days" className="w-5 h-5" />
               Refresh activity
             </button>
           </div>

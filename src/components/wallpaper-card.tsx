@@ -3,8 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { HeartIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+import { Icon } from '@/components/ui/icon'
 import { cn, formatNumber } from '@/lib/utils'
 
 interface WallpaperCardProps {
@@ -84,9 +83,9 @@ export function WallpaperCard({ wallpaper, className }: WallpaperCardProps) {
               )}
             >
               {isFavorited ? (
-                <HeartSolidIcon className="w-4 h-4 text-red-500" />
+                <Icon name="heart" className="w-4 h-4 text-red-500" />
               ) : (
-                <HeartIcon className="w-4 h-4" />
+                <Icon name="heart" className="w-4 h-4" />
               )}
             </button>
           </div>
@@ -128,11 +127,11 @@ export function WallpaperCard({ wallpaper, className }: WallpaperCardProps) {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
-                <ArrowDownTrayIcon className="w-4 h-4" />
+                <Icon name="download" className="w-4 h-4" />
                 <span className="font-mono">{formatNumber(wallpaper.downloadsCount)}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <HeartIcon className="w-4 h-4" />
+                <Icon name="heart" className="w-4 h-4" />
                 <span className="font-mono">{formatNumber(wallpaper._count.favorites)}</span>
               </div>
             </div>

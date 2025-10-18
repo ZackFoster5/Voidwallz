@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { StarIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
-import { CheckIcon as CheckSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import { Icon } from '@/components/ui/icon'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement } from '@/components/scroll-animations'
 import { cn } from '@/lib/utils'
@@ -10,32 +9,32 @@ import RequireAuth from '@/components/auth/require-auth'
 
 const premiumFeatures = [
   {
-    icon: <StarSolidIcon className="w-6 h-6" />,
+    icon: <Icon name="star" className="w-6 h-6" />,
     title: "UNLIMITED DOWNLOADS",
     description: "Download as many wallpapers as you want without any restrictions"
   },
   {
-    icon: <SparklesIcon className="w-6 h-6" />,
+    icon: <Icon name="sparkles" className="w-6 h-6" />,
     title: "EXCLUSIVE WALLPAPERS",
     description: "Access to premium-only collection with 500+ exclusive high-quality wallpapers"
   },
   {
-    icon: <StarSolidIcon className="w-6 h-6" />,
+    icon: <Icon name="star" className="w-6 h-6" />,
     title: "PREMIUM BADGE",
     description: "Show off your premium status with an exclusive golden star badge"
   },
   {
-    icon: <CheckSolidIcon className="w-6 h-6" />,
+    icon: <Icon name="check" className="w-6 h-6" />,
     title: "AD-FREE EXPERIENCE",
     description: "Browse and download without any advertisements or interruptions"
   },
   {
-    icon: <StarIcon className="w-6 h-6" />,
+    icon: <Icon name="star" className="w-6 h-6" />,
     title: "EARLY ACCESS",
     description: "Get first access to new wallpapers and features before anyone else"
   },
   {
-    icon: <SparklesIcon className="w-6 h-6" />,
+    icon: <Icon name="sparkles" className="w-6 h-6" />,
     title: "CUSTOM COLLECTIONS",
     description: "Create unlimited personal collections and organize your favorites"
   }
@@ -193,15 +192,15 @@ export default function PremiumPage() {
 
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckSolidIcon className="w-4 h-4 text-green-500" />
+                    <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>All Premium Features</span>
                     </div>
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckSolidIcon className="w-4 h-4 text-green-500" />
+                    <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>24/7 Support</span>
                     </div>
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckSolidIcon className="w-4 h-4 text-green-500" />
+                    <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>Cancel Anytime</span>
                     </div>
                   </div>
@@ -263,9 +262,9 @@ export default function PremiumPage() {
               onClick={() => handlePurchase('YEARLY')}
               className="btn-brutalist bg-background text-primary hover:bg-secondary hover:text-background px-8 py-4 text-lg font-bold inline-flex items-center space-x-2"
             >
-              <StarSolidIcon className="w-6 h-6" />
+              <Icon name="star" className="w-6 h-6" />
               <span>START FREE TRIAL</span>
-              <ArrowRightIcon className="w-5 h-5" />
+              <Icon name="arrow-right" className="w-5 h-5" />
             </button>
             <p className="text-sm opacity-75 mt-4">
               7-day free trial • No credit card required

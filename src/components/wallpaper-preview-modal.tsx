@@ -1,12 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { XMarkIcon, ArrowDownTrayIcon, HeartIcon, ShareIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 import { type ColorPalette } from '@/lib/color-extractor'
+import { previewImageUrl } from '@/lib/cdn-image'
 
 interface Wallpaper {
   id: string
@@ -21,6 +21,7 @@ interface Wallpaper {
   views: number
   featured: boolean
   resolution: string
+  deviceType?: 'desktop' | 'mobile'
 }
 
 interface WallpaperPreviewModalProps {
@@ -45,32 +46,28 @@ export function WallpaperPreviewModal({
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState<number>(0)
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      // Save current scroll position
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
-    } else {
-      // Restore scroll position
-      const scrollY = document.body.style.top
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1)
-      }
+// Lock scroll in place while the modal is open without jumping to top
+const savedScrollRef = useRef<number | null>(null)
+useEffect(() => {
+  if (isOpen) {
+    savedScrollRef.current = window.scrollY
+    // Hide scrollbars but keep layout and scroll position
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+  } else {
+    // Restore overflow and scroll to where we left off
+    document.documentElement.style.overflow = ''
+    document.body.style.overflow = ''
+    if (savedScrollRef.current !== null) {
+      window.scrollTo({ top: savedScrollRef.current })
     }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-    }
-  }, [isOpen])
+  }
+  return () => {
+    // Ensure restoration on unmount
+    document.documentElement.style.overflow = ''
+    document.body.style.overflow = ''
+  }
+}, [isOpen])
 
   // Disable dynamic color extraction for higher contrast and consistency
   useEffect(() => {
@@ -79,6 +76,9 @@ export function WallpaperPreviewModal({
   }, [wallpaper?.id, isOpen])
 
   if (!wallpaper) return null
+
+  const isDesktop = (wallpaper.deviceType ?? (wallpaper.width >= wallpaper.height ? 'desktop' : 'mobile')) === 'desktop'
+  const aspectClass = isDesktop ? 'aspect-[16/9]' : 'aspect-[9/16]'
 
   const handleDownload = async () => {
     try {
@@ -191,12 +191,12 @@ export function WallpaperPreviewModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative max-w-6xl w-full max-h-[90vh] bg-background border-4 border-foreground shadow-[8px_8px_0px_0px_var(--color-foreground)] overflow-hidden"
+            className="relative w-[95vw] max-w-[1400px] max-h-[94vh] bg-background border-4 border-foreground shadow-[8px_8px_0px_0px_var(--color-foreground)] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div 
-              className="flex items-center justify-between p-4 border-b-2 border-foreground bg-card"
+              className="flex items-center justify-between p-3 border-b-2 border-foreground bg-card"
               style={colorPalette ? {
                 backgroundColor: colorPalette.background,
                 borderColor: colorPalette.primary,
@@ -232,13 +232,13 @@ export function WallpaperPreviewModal({
                   color: colorPalette.text
                 } : {}}
               >
-                <XMarkIcon className="w-5 h-5" />
+                <Icon name="x-mark" className="w-5 h-5" />
               </button>
             </div>
 
             <div className="flex flex-col lg:flex-row">
               {/* Image Section */}
-              <div className="flex-1 relative bg-background flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
+              <div className="flex-1 relative bg-background flex items-center justify-center min-h-[420px] lg:min-h-[560px] py-0">
                 {/* Download progress */}
                 {isDownloading && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[80%] max-w-xl">
@@ -262,21 +262,31 @@ export function WallpaperPreviewModal({
                     </div>
                   </div>
                 )}
-                <Image
-                  src={wallpaper.thumbnailPath}
-                  alt={wallpaper.title}
-                  fill
-                  priority
-                  unoptimized={wallpaper.thumbnailPath.startsWith('blob:')}
+                <div
                   className={cn(
-                    "object-contain transition-opacity duration-300",
-                    imageLoaded ? "opacity-100" : "opacity-0"
+                    "relative w-full max-h-[85vh]",
+                    aspectClass
                   )}
-                  onLoadingComplete={() => setImageLoaded(true)}
-                />
+                >
+                  <Image
+                    src={previewImageUrl(wallpaper.thumbnailPath, isDesktop ? 'desktop' : 'mobile')}
+                    alt={wallpaper.title}
+                    fill
+                    priority
+                    unoptimized
+                    className={cn(
+                      "object-contain transition-opacity duration-300",
+                      imageLoaded ? "opacity-100" : "opacity-0"
+                    )}
+                    onLoad={() => setImageLoaded(true)}
+                    decoding="async"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                </div>
                 
-                {/* Image Overlay Actions */}
-                <div className="absolute bottom-4 right-4 flex space-x-2">
+                {/* Image Overlay Actions (moved to sidebar) */}
+                <div className="hidden">
                   <motion.button
                     onClick={onToggleFavorite}
                     whileHover={{ scale: 1.05 }}
@@ -296,10 +306,10 @@ export function WallpaperPreviewModal({
                           animate={{ scale: 1 }}
                           transition={{ type: "spring", stiffness: 500, damping: 15 }}
                         >
-                          <HeartSolidIcon className="w-5 h-5 text-red-500" />
+                          <Icon name="heart" className="w-5 h-5 text-red-500" />
                         </motion.div>
                       ) : (
-                        <HeartIcon className="w-5 h-5" />
+                        <Icon name="heart" className="w-5 h-5" />
                       )}
                     </motion.div>
                   </motion.button>
@@ -309,7 +319,7 @@ export function WallpaperPreviewModal({
                     whileTap={{ scale: 0.95 }}
                     className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
                   >
-                    <ShareIcon className="w-5 h-5" />
+                    <Icon name="share" className="w-5 h-5" />
                   </motion.button>
                   <motion.button
                     onClick={handleDownload}
@@ -318,14 +328,14 @@ export function WallpaperPreviewModal({
                     disabled={isDownloading}
                     className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)] disabled:opacity-50"
                   >
-                    <ArrowDownTrayIcon className="w-5 h-5" />
+                    <Icon name="download" className="w-5 h-5" />
                   </motion.button>
                 </div>
               </div>
 
               {/* Details Panel */}
               <div 
-                className="w-full lg:w-80 border-l-0 lg:border-l-2 border-foreground bg-card"
+                className="w-full lg:w-80 lg:max-h-[85vh] overflow-y-auto border-l-0 lg:border-l-2 border-foreground bg-card"
                 style={colorPalette ? {
                   borderColor: colorPalette.primary,
                   backgroundColor: colorPalette.background
@@ -379,7 +389,7 @@ export function WallpaperPreviewModal({
 
                 {/* Tab Content */}
                 <div 
-                  className="p-6 space-y-6 max-h-[500px] overflow-y-auto font-medium"
+                  className="p-6 space-y-6 max-h-[72vh] overflow-y-auto font-medium"
                   style={colorPalette ? { 
                     color: colorPalette.text,
                     textShadow: colorPalette.text === '#1a1a1a' ? 'none' : '0 1px 2px rgba(0,0,0,0.1)'
@@ -402,9 +412,36 @@ export function WallpaperPreviewModal({
                           boxShadow: `4px 4px 0px 0px ${colorPalette.primary}`
                         } : {}}
                       >
-                        <ArrowDownTrayIcon className="w-6 h-6" />
+                        <Icon name="download" className="w-6 h-6" />
                         <span>DOWNLOAD</span>
                       </button>
+
+                      {/* Quick actions: Favorite and Share moved from image overlay */}
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <motion.button
+                          onClick={onToggleFavorite}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="w-full p-3 border-2 border-foreground bg-background hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <Icon name="heart" className={cn("w-5 h-5", isFavorite ? "text-red-500" : undefined)} />
+                            <span className="font-mono text-sm">{isFavorite ? 'UNFAVORITE' : 'FAVORITE'}</span>
+                          </div>
+                        </motion.button>
+
+                        <motion.button
+                          onClick={handleShare}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="w-full p-3 border-2 border-foreground bg-background hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <Icon name="share" className="w-5 h-5" />
+                            <span className="font-mono text-sm">SHARE</span>
+                          </div>
+                        </motion.button>
+                      </div>
 
                       {/* Resolution & Size */}
                       <div className="space-y-3">

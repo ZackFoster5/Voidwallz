@@ -3,18 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import RequireAuth from '@/components/auth/require-auth'
-import {
-  MagnifyingGlassIcon,
-  ArrowRightIcon,
-  GlobeAltIcon,
-  PuzzlePieceIcon,
-  DevicePhoneMobileIcon,
-  TruckIcon,
-  RocketLaunchIcon,
-  Squares2X2Icon,
-  SparklesIcon,
-  FunnelIcon,
-} from '@heroicons/react/24/outline'
+import { Icon } from '@/components/ui/icon'
 import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-animations'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { cn } from '@/lib/utils'
@@ -127,12 +116,12 @@ type CategoryRecord = {
 }
 
 const iconMap: Record<string, ReactNode> = {
-  nature: <GlobeAltIcon className="w-6 h-6" />,
-  abstract: <PuzzlePieceIcon className="w-6 h-6" />,
-  gaming: <DevicePhoneMobileIcon className="w-6 h-6" />,
-  cars: <TruckIcon className="w-6 h-6" />,
-  space: <RocketLaunchIcon className="w-6 h-6" />,
-  minimalist: <Squares2X2Icon className="w-6 h-6" />,
+  nature: <Icon name="globe" className="w-6 h-6" />,
+  abstract: <Icon name="puzzle" className="w-6 h-6" />,
+  gaming: <Icon name="phone" className="w-6 h-6" />,
+  cars: <Icon name="truck" className="w-6 h-6" />,
+  space: <Icon name="rocket" className="w-6 h-6" />,
+  minimalist: <Icon name="grid" className="w-6 h-6" />,
 }
 
 const accentMap: Record<string, string> = {
@@ -150,7 +139,7 @@ function getAccentGradient(slug: string) {
 }
 
 function getIcon(slug: string) {
-  return iconMap[slug] ?? <SparklesIcon className="w-6 h-6" />
+  return iconMap[slug] ?? <Icon name="sparkles" className="w-6 h-6" />
 }
 
 function getCount(category: CategoryRecord) {
@@ -356,7 +345,7 @@ export default function CategoriesPage() {
                   type="button"
                   aria-label="Search categories"
                 >
-                  <MagnifyingGlassIcon className="w-5 h-5" />
+                  <Icon name="magnifying-glass" className="w-5 h-5" />
                 </button>
               </div>
 
@@ -368,7 +357,7 @@ export default function CategoriesPage() {
                   )}
                   aria-hidden="true"
                 >
-                  <FunnelIcon className="w-5 h-5" />
+                  <Icon name="funnel" className="w-5 h-5" />
                 </div>
                 <select
                   value={sortBy}
@@ -433,7 +422,7 @@ export default function CategoriesPage() {
                             </p>
                           </div>
                         </div>
-                        <ArrowRightIcon className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors duration-200" />
+                        <Icon name="arrow-right" className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors duration-200" />
                       </div>
 
                       <p className="text-sm text-foreground/70 leading-relaxed mb-6">

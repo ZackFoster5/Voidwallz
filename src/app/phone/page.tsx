@@ -2,13 +2,35 @@ import { Suspense } from "react";
 import GalleryClient from "../gallery/gallery-client";
 import { normalizeCloudinaryResource, searchCloudinaryFolder } from "@/lib/cloudinary";
 import RequireAuth from "@/components/auth/require-auth";
+import { listLocalWallpapers } from "@/lib/local-wallpapers";
 
 export const revalidate = 0;
 
 export default async function PhonePage() {
   const folder = process.env.CLOUDINARY_MOBILE_FOLDER || "wallpapers phone";
   const result = await searchCloudinaryFolder(folder, { maxResults: 120 });
-  const normalized = result.resources.map((r, i) => normalizeCloudinaryResource(r, i));
+  let normalized = result.resources.map((r, i) => normalizeCloudinaryResource(r, i));
+
+  // Fallback to local public assets if Cloudinary returns no results
+  if (normalized.length === 0) {
+    const local = await listLocalWallpapers('mobile', 120)
+    normalized = local.map((n, i) => ({
+      id: n.id,
+      displayId: n.displayId,
+      title: n.title,
+      slug: n.slug,
+      thumbnailPath: n.thumbnailPath,
+      width: n.width,
+      height: n.height,
+      bytes: n.bytes,
+      format: n.format,
+      tags: n.tags,
+      category: n.category,
+      createdAt: n.createdAt,
+      resolution: n.resolution,
+      folder: n.folder,
+    }))
+  }
 
   const baseWallpapers = normalized.map((n) => ({
     id: n.id,
@@ -21,7 +43,7 @@ export default async function PhonePage() {
     tags: n.tags,
     downloads: 0,
     views: 0,
-    featured: false,
+    featured: (n.tags ?? []).some(t => ['featured','feature'].includes(t.toLowerCase())),
     resolution: n.resolution,
     deviceType: "mobile" as const,
     createdAt: n.createdAt,

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'
+import { Icon } from '@/components/ui/icon'
 import { useTheme } from '@/components/theme-provider'
 import { cn } from '@/lib/utils'
 
@@ -23,11 +23,11 @@ export function ThemeToggle({ className }: { className?: string }) {
     >
       {/* Track Background with Icons */}
       <div className="absolute inset-0 flex items-center justify-between px-2">
-        <SunIcon className={cn(
+        <Icon name="sun" className={cn(
           "w-3 h-3 transition-all duration-300 z-10",
           isDark ? "text-gray-500" : "text-yellow-500"
         )} />
-        <MoonIcon className={cn(
+        <Icon name="moon" className={cn(
           "w-3 h-3 transition-all duration-300 z-10",
           isDark ? "text-blue-400" : "text-gray-400"
         )} />
@@ -61,9 +61,9 @@ export function ThemeToggle({ className }: { className?: string }) {
           }}
         >
           {isDark ? (
-            <MoonIcon className="w-3 h-3 text-background" />
+            <Icon name="moon" className="w-3 h-3 text-background" />
           ) : (
-            <SunIcon className="w-3 h-3 text-background" />
+            <Icon name="sun" className="w-3 h-3 text-background" />
           )}
         </motion.div>
       </motion.div>
@@ -96,11 +96,11 @@ export function ThemeToggleLarge({ className }: { className?: string }) {
       )}>
         {/* Icons in track */}
         <div className="absolute inset-0 flex items-center justify-between px-2">
-          <SunIcon className={cn(
+          <Icon name="sun" className={cn(
             "w-5 h-5 transition-all duration-300",
             isDark ? "text-foreground/30" : "text-primary"
           )} />
-          <MoonIcon className={cn(
+          <Icon name="moon" className={cn(
             "w-5 h-5 transition-all duration-300",
             isDark ? "text-primary" : "text-foreground/30"
           )} />
@@ -129,9 +129,9 @@ export function ThemeToggleLarge({ className }: { className?: string }) {
           transition={{ duration: 0.3 }}
         >
           {isDark ? (
-            <MoonIcon className="w-4 h-4 text-background" />
+            <Icon name="moon" className="w-4 h-4 text-background" />
           ) : (
-            <SunIcon className="w-4 h-4 text-background" />
+            <Icon name="sun" className="w-4 h-4 text-background" />
           )}
         </motion.div>
       </motion.div>

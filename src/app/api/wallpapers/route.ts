@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
           tags: normalized.tags,
           downloads: 0,
           views: 0,
-          featured: false,
+          featured: (normalized.tags ?? []).some((t) => ['featured', 'feature'].includes(t.toLowerCase())),
           resolution: normalized.resolution,
           deviceType,
           createdAt: normalized.createdAt,

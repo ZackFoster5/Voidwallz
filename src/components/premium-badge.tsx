@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { StarIcon, SparklesIcon } from '@heroicons/react/24/solid'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 interface PremiumBadgeProps {
@@ -35,8 +35,8 @@ export function PremiumBadge({
       sizeClasses[size],
       className
     )}>
-      {variant === 'crown' && <StarIcon className={iconSizes[size]} />}
-      {variant === 'star' && <SparklesIcon className={iconSizes[size]} />}
+      {variant === 'crown' && <Icon name="star" className={iconSizes[size]} />}
+      {variant === 'star' && <Icon name="sparkles" className={iconSizes[size]} />}
       <span>PREMIUM</span>
     </div>
   )
@@ -69,7 +69,7 @@ export function PremiumUserBadge({ className = '' }: { className?: string }) {
       className={cn("inline-flex", className)}
     >
       <div className="relative">
-        <StarIcon className="w-5 h-5 text-yellow-500" />
+        <Icon name="star" className="w-5 h-5 text-yellow-500" />
         <motion.div
           animate={{ 
             scale: [1, 1.2, 1],
@@ -82,7 +82,7 @@ export function PremiumUserBadge({ className = '' }: { className?: string }) {
           }}
           className="absolute inset-0"
         >
-          <StarIcon className="w-5 h-5 text-yellow-300" />
+          <Icon name="star" className="w-5 h-5 text-yellow-300" />
         </motion.div>
       </div>
     </motion.div>
@@ -96,7 +96,7 @@ export function PremiumLock({ className = '' }: { className?: string }) {
       "inline-flex items-center space-x-2 px-3 py-2 bg-yellow-500/10 border border-yellow-500 text-yellow-600 font-mono text-sm font-bold uppercase tracking-wide",
       className
     )}>
-      <StarIcon className="w-4 h-4" />
+      <Icon name="star" className="w-4 h-4" />
       <span>Premium Only</span>
     </div>
   )

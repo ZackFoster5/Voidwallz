@@ -63,6 +63,10 @@ model Wallpaper {
   downloads       Download[]
   ratings         Rating[]
   favorites       Favorite[]
+  // Back-relations
+  playlistItems   PlaylistItem[]
+  collectionItems CollectionItem[]
+  submissions     Submission[]
   
   @@map("wallpapers")
 }
@@ -92,6 +96,9 @@ model User {
   downloads     Download[]
   ratings       Rating[]
   favorites     Favorite[]
+  // Back-relations for submissions moderation
+  approvedSubmissions Submission[] @relation("SubmissionApprovedBy")
+  rejectedSubmissions Submission[] @relation("SubmissionRejectedBy")
   
   @@map("users")
 }
@@ -150,4 +157,193 @@ enum UserRole {
   USER
   ADMIN
   SUPER_ADMIN
+}
+
+// Premium plans
+enum Plan {
+  FREE
+  PREMIUM
+  LIFETIME
+}
+
+// Rotation schedule for playlists
+enum RotationInterval {
+  HOURLY
+  DAILY
+  WEEKLY
+}
+
+// Background processing for VoidAI
+enum JobType {
+  UPSCALE
+  RECOLOR
+  PACK_BUILD
+  RECOMMENDATIONS
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// User profile linked to Supabase auth user
+model Profile {
+  id             String   @id @default(cuid())
+  supabaseUid    String   @unique @map("supabase_uid")
+  plan           Plan     @default(FREE)
+  planExpiresAt  DateTime? @map("plan_expires_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  deviceProfiles DeviceProfile[]
+  playlists      Playlist[]
+  collections    Collection[]
+  jobs           Job[]
+  submissions    Submission[]
+
+  @@map("profiles")
+}
+
+model DeviceProfile {
+  id         String   @id @default(cuid())
+  profileId  String   @map("profile_id")
+  name       String
+  deviceType String   // e.g., "desktop" | "mobile" | "tablet"
+  width      Int
+  height     Int
+  scale      Float?
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("device_profiles")
+}
+
+model Playlist {
+  id                String            @id @default(cuid())
+  profileId         String            @map("profile_id")
+  name              String
+  rotationInterval  RotationInterval  @default(DAILY) @map("rotation_interval")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  profile           Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  items             PlaylistItem[]
+
+  @@index([profileId])
+  @@map("playlists")
+}
+
+model PlaylistItem {
+  id          String    @id @default(cuid())
+  playlistId  String    @map("playlist_id")
+  // Support both DB-backed wallpapers and Cloudinary-only assets
+  wallpaperId String?   @map("wallpaper_id")
+  cloudinaryPublicId String? @map("cloudinary_public_id")
+  sourceUrl   String?   @map("source_url")
+  title       String?
+  order       Int       @default(0)
+
+  playlist    Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  wallpaper   Wallpaper? @relation(fields: [wallpaperId], references: [id], onDelete: SetNull)
+
+  @@index([playlistId])
+  @@map("playlist_items")
+}
+
+// Foldered collections; favorites can be represented as a default collection
+model Collection {
+  id         String      @id @default(cuid())
+  profileId  String      @map("profile_id")
+  name       String
+  isPrivate  Boolean     @default(false) @map("is_private")
+  parentId   String?     @map("parent_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  parent     Collection? @relation("CollectionToChildren", fields: [parentId], references: [id])
+  children   Collection[] @relation("CollectionToChildren")
+  items      CollectionItem[]
+
+  @@index([profileId])
+  @@map("collections")
+}
+
+model CollectionItem {
+  id           String    @id @default(cuid())
+  collectionId String    @map("collection_id")
+  wallpaperId  String?   @map("wallpaper_id")
+  cloudinaryPublicId String? @map("cloudinary_public_id")
+  sourceUrl    String?   @map("source_url")
+  addedAt      DateTime  @default(now()) @map("added_at")
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  wallpaper    Wallpaper? @relation(fields: [wallpaperId], references: [id], onDelete: SetNull)
+
+  @@index([collectionId])
+  @@map("collection_items")
+}
+
+model Job {
+  id         String     @id @default(cuid())
+  profileId  String?    @map("profile_id")
+  type       JobType
+  status     JobStatus  @default(QUEUED)
+  payload    Json
+  output     Json?
+  error      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  profile    Profile?   @relation(fields: [profileId], references: [id], onDelete: SetNull)
+
+  @@index([profileId])
+  @@map("jobs")
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Submission {
+  id               String           @id @default(cuid())
+  profileId        String           @map("profile_id")
+  title            String
+  description      String?
+  tags             Json?
+  categorySlug     String?          @map("category_slug")
+  imagePublicId    String           @map("image_public_id")
+  imageSecureUrl   String           @map("image_secure_url")
+  width            Int
+  height           Int
+  bytes            Int
+  format           String
+  status           SubmissionStatus @default(PENDING)
+  moderationNotes  String?          @map("moderation_notes")
+  approvedAt       DateTime?        @map("approved_at")
+  approvedByUserId String?          @map("approved_by_user_id")
+  rejectedAt       DateTime?        @map("rejected_at")
+  rejectedByUserId String?          @map("rejected_by_user_id")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  wallpaperId      String?          @map("wallpaper_id")
+
+  // Relations
+  profile          Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  approvedBy       User?            @relation("SubmissionApprovedBy", fields: [approvedByUserId], references: [id])
+  rejectedBy       User?            @relation("SubmissionRejectedBy", fields: [rejectedByUserId], references: [id])
+  wallpaper        Wallpaper?       @relation(fields: [wallpaperId], references: [id], onDelete: SetNull)
+
+  @@index([profileId])
+  @@index([status])
+  @@map("submissions")
 }

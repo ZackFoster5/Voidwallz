@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { ArrowRightIcon, CheckIcon, StarIcon, UsersIcon, ArrowDownTrayIcon, HeartIcon, SparklesIcon } from '@heroicons/react/24/outline'
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { FadeInUp, StaggerContainer, StaggerItem, FloatingElement } from '@/components/scroll-animations'
@@ -16,22 +15,22 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: <StarIcon className="w-8 h-8" />,
+      icon: <Icon name="star" className="w-8 h-8" />,
       title: "CURATED QUALITY",
       description: "Hand-picked wallpapers that meet our strict quality standards. No clutter, just beauty."
     },
     {
-      icon: <ArrowDownTrayIcon className="w-8 h-8" />,
+      icon: <Icon name="download" className="w-8 h-8" />,
       title: "MULTIPLE RESOLUTIONS",
       description: "Download in 4K, 2K, 1080p and more. Perfect for any device or screen size."
     },
     {
-      icon: <UsersIcon className="w-8 h-8" />,
+      icon: <Icon name="users" className="w-8 h-8" />,
       title: "COMMUNITY DRIVEN",
       description: "Join thousands of users sharing and discovering amazing wallpapers daily."
     },
     {
-      icon: <HeartIcon className="w-8 h-8" />,
+      icon: <Icon name="heart" className="w-8 h-8" />,
       title: "AD-FREE EXPERIENCE",
       description: "Clean, fast browsing without annoying ads. Focus on what matters - the art."
     }
@@ -88,7 +87,7 @@ export default function LandingPage() {
                     )}
                   >
                     <span>BROWSE WALLPAPERS</span>
-                    <ArrowRightIcon className="w-5 h-5" />
+                    <Icon name="arrow-right" className="w-5 h-5" />
                   </Link>
                   
                   <button
@@ -222,11 +221,11 @@ export default function LandingPage() {
                 
                 <div className="space-y-4">
                   {[
-                    { icon: <ArrowDownTrayIcon className="w-6 h-6" />, text: "Unlimited Downloads" },
-                    { icon: <SparklesIcon className="w-6 h-6" />, text: "500+ Exclusive Wallpapers" },
-                    { icon: <StarSolidIcon className="w-6 h-6" />, text: "Premium Badge & Status" },
-                    { icon: <StarIcon className="w-6 h-6" />, text: "Ad-Free Experience" },
-                    { icon: <CheckIcon className="w-6 h-6" />, text: "Early Access to New Content" }
+                    { icon: <Icon name="download" className="w-6 h-6" />, text: "Unlimited Downloads" },
+                    { icon: <Icon name="sparkles" className="w-6 h-6" />, text: "500+ Exclusive Wallpapers" },
+                    { icon: <Icon name="star" className="w-6 h-6" />, text: "Premium Badge & Status" },
+                    { icon: <Icon name="star" className="w-6 h-6" />, text: "Ad-Free Experience" },
+                    { icon: <Icon name="check" className="w-6 h-6" />, text: "Early Access to New Content" }
                   ].map((benefit, index) => (
                     <div key={index} className="flex items-center space-x-4">
                       <div className="text-yellow-600">
@@ -250,17 +249,17 @@ export default function LandingPage() {
                     <div className="text-sm text-green-600 font-mono font-bold mt-1">Save 33%</div>
                   </div>
 
-                  <div className="space-y-3 mb-8 text-sm">
+                    <div className="space-y-3 mb-8 text-sm">
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckIcon className="w-4 h-4 text-green-500" />
+                      <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>All Premium Features</span>
                     </div>
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckIcon className="w-4 h-4 text-green-500" />
+                      <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>7-Day Free Trial</span>
                     </div>
                     <div className="flex items-center justify-center space-x-2">
-                      <CheckIcon className="w-4 h-4 text-green-500" />
+                      <Icon name="check" className="w-4 h-4 text-green-500" />
                       <span>Cancel Anytime</span>
                     </div>
                   </div>
@@ -269,7 +268,7 @@ export default function LandingPage() {
                     href="/premium"
                     className="btn-brutalist w-full px-8 py-4 text-lg font-bold bg-yellow-500 text-black hover:bg-yellow-600 inline-flex items-center justify-center space-x-2"
                   >
-                    <StarSolidIcon className="w-6 h-6" />
+                    <Icon name="star" className="w-6 h-6" />
                     <span>START FREE TRIAL</span>
                   </Link>
 
@@ -338,7 +337,7 @@ export default function LandingPage() {
               )}
             >
               <span>START EXPLORING</span>
-              <ArrowRightIcon className="w-5 h-5" />
+              <Icon name="arrow-right" className="w-5 h-5" />
             </Link>
           </FadeInUp>
         </div>
