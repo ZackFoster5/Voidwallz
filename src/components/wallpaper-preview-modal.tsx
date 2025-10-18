@@ -344,59 +344,65 @@ export function WallpaperPreviewModal({
                   />
                 </div>
 
-                {/* Image Overlay Actions (moved to sidebar) */}
-                <div className="hidden">
-                  <motion.button
-                    onClick={onToggleFavorite}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
-                  >
-                    <motion.div
-                      animate={
-                        isFavorite
-                          ? {
-                              scale: [1, 1.3, 1],
-                              rotate: [0, -10, 10, 0],
-                            }
-                          : {}
-                      }
-                      transition={{ duration: 0.6, ease: "easeInOut" }}
+                {/* Mobile Action Buttons - Always visible at bottom of image */}
+                <div className="absolute bottom-0 left-0 right-0 lg:hidden">
+                  <div className="flex items-center justify-center gap-2 p-3 bg-background/95 backdrop-blur-sm border-t-2 border-foreground">
+                    <motion.button
+                      onClick={handleDownload}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={isDownloading}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-foreground bg-primary text-background hover:bg-primary/90 transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)] disabled:opacity-50 font-mono font-bold text-sm uppercase"
                     >
-                      {isFavorite ? (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 15,
-                          }}
-                        >
-                          <Icon name="heart" className="w-5 h-5 text-red-500" />
-                        </motion.div>
-                      ) : (
-                        <Icon name="heart" className="w-5 h-5" />
-                      )}
-                    </motion.div>
-                  </motion.button>
-                  <motion.button
-                    onClick={handleShare}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
-                  >
-                    <Icon name="share" className="w-5 h-5" />
-                  </motion.button>
-                  <motion.button
-                    onClick={handleDownload}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    disabled={isDownloading}
-                    className="p-3 bg-background/90 border-2 border-foreground hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)] disabled:opacity-50"
-                  >
-                    <Icon name="download" className="w-5 h-5" />
-                  </motion.button>
+                      <Icon name="download" className="w-5 h-5" />
+                      <span>Download</span>
+                    </motion.button>
+                    <motion.button
+                      onClick={onToggleFavorite}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-3 border-2 border-foreground bg-background hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                    >
+                      <motion.div
+                        animate={
+                          isFavorite
+                            ? {
+                                scale: [1, 1.3, 1],
+                                rotate: [0, -10, 10, 0],
+                              }
+                            : {}
+                        }
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                      >
+                        {isFavorite ? (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 500,
+                              damping: 15,
+                            }}
+                          >
+                            <Icon
+                              name="heart"
+                              className="w-5 h-5 text-red-500"
+                            />
+                          </motion.div>
+                        ) : (
+                          <Icon name="heart" className="w-5 h-5" />
+                        )}
+                      </motion.div>
+                    </motion.button>
+                    <motion.button
+                      onClick={handleShare}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-3 border-2 border-foreground bg-background hover:bg-primary hover:text-background transition-all duration-200 shadow-[2px_2px_0px_0px_var(--color-foreground)]"
+                    >
+                      <Icon name="share" className="w-5 h-5" />
+                    </motion.button>
+                  </div>
                 </div>
               </div>
 
