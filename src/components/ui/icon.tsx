@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import {
   // Core
   ArrowRight01Icon,
@@ -30,60 +30,75 @@ import {
   AiSearchIcon,
   FilterIcon,
   Logout02Icon,
-  Sun02Icon,
-  MoonIcon,
+  Sun03Icon,
+  Moon02Icon,
   StarIcon,
   UserGroupIcon,
   MagicWand02Icon,
-} from 'hugeicons-react'
+  Bug01Icon,
+  BulbIcon,
+  AlertCircleIcon,
+  MessageQuestionIcon,
+  HelpCircleIcon,
+} from "hugeicons-react";
 
 export type IconName =
-  | 'arrow-right'
-  | 'arrow-up-right'
-  | 'arrow-path'
-  | 'check'
-  | 'check-circle'
-  | 'star'
-  | 'users'
-  | 'user'
-  | 'user-circle'
-  | 'download'
-  | 'heart'
-  | 'sparkles'
-  | 'globe'
-  | 'puzzle'
-  | 'phone'
-  | 'truck'
-  | 'rocket'
-  | 'grid'
-  | 'photo'
-  | 'pencil-square'
-  | 'shield'
-  | 'lock-closed'
-  | 'key'
-  | 'credit-card'
-  | 'calendar-days'
-  | 'bell'
-  | 'info'
-  | 'x-mark'
-  | 'share'
-  | 'eye'
-  | 'magnifying-glass'
-  | 'funnel'
-  | 'logout'
-  | 'sun'
-  | 'moon'
+  | "arrow-right"
+  | "arrow-up-right"
+  | "arrow-path"
+  | "check"
+  | "check-circle"
+  | "star"
+  | "users"
+  | "user"
+  | "user-circle"
+  | "download"
+  | "heart"
+  | "sparkles"
+  | "globe"
+  | "puzzle"
+  | "phone"
+  | "truck"
+  | "rocket"
+  | "grid"
+  | "photo"
+  | "pencil-square"
+  | "shield"
+  | "lock-closed"
+  | "key"
+  | "credit-card"
+  | "calendar-days"
+  | "bell"
+  | "info"
+  | "x-mark"
+  | "share"
+  | "eye"
+  | "magnifying-glass"
+  | "funnel"
+  | "logout"
+  | "sun"
+  | "moon"
+  | "bug"
+  | "lightbulb"
+  | "exclamation-circle"
+  | "chat-bubble"
+  | "question-circle";
 
-const iconMap: Record<IconName, React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number | string }>> = {
-  'arrow-right': ArrowRight01Icon,
-  'arrow-up-right': ArrowUpRight01Icon,
-  'arrow-path': ArrowReloadHorizontalIcon,
+const iconMap: Record<
+  IconName,
+  React.ComponentType<
+    React.SVGProps<SVGSVGElement> & { size?: number | string }
+  >
+> = {
+  "arrow-right": ArrowRight01Icon,
+  "arrow-up-right": ArrowUpRight01Icon,
+  "arrow-path": ArrowReloadHorizontalIcon,
   check: CheckmarkCircle01Icon,
-  'check-circle': CheckmarkCircle01Icon,
+  "check-circle": CheckmarkCircle01Icon,
   star: StarIcon,
   users: UserGroupIcon,
   user: UserIcon,
-  'user-circle': UserCircleIcon,
+  "user-circle": UserCircleIcon,
   download: Download02Icon,
   heart: FavouriteIcon,
   sparkles: MagicWand02Icon,
@@ -94,34 +109,39 @@ const iconMap: Record<IconName, React.ComponentType<React.SVGProps<SVGSVGElement
   rocket: RocketIcon,
   grid: GridViewIcon,
   photo: Image01Icon,
-  'pencil-square': PencilEdit01Icon,
+  "pencil-square": PencilEdit01Icon,
   shield: Shield01Icon,
-  'lock-closed': LockIcon,
+  "lock-closed": LockIcon,
   key: Key01Icon,
-  'credit-card': CreditCardIcon,
-  'calendar-days': Calendar02Icon,
+  "credit-card": CreditCardIcon,
+  "calendar-days": Calendar02Icon,
   bell: SchoolBell01Icon,
   info: InformationCircleIcon,
-  'x-mark': Cancel01Icon,
+  "x-mark": Cancel01Icon,
   share: Share02Icon,
   eye: EyeIcon,
-  'magnifying-glass': AiSearchIcon,
+  "magnifying-glass": AiSearchIcon,
   funnel: FilterIcon,
   logout: Logout02Icon,
-  sun: Sun02Icon,
-  moon: MoonIcon,
-}
+  sun: Sun03Icon,
+  moon: Moon02Icon,
+  bug: Bug01Icon,
+  lightbulb: BulbIcon,
+  "exclamation-circle": AlertCircleIcon,
+  "chat-bubble": MessageQuestionIcon,
+  "question-circle": HelpCircleIcon,
+};
 
 export type IconProps = {
-  name: IconName
-  size?: number | string
-  className?: string
-  title?: string
-} & Omit<React.SVGProps<SVGSVGElement>, 'name' | 'ref'>
+  name: IconName;
+  size?: number | string;
+  className?: string;
+  title?: string;
+} & Omit<React.SVGProps<SVGSVGElement>, "name" | "ref">;
 
 export function Icon({ name, size, className, title, ...rest }: IconProps) {
-  const Cmp = iconMap[name]
-  if (!Cmp) return null
+  const Cmp = iconMap[name];
+  if (!Cmp) return null;
   // Intentionally do not set a default `size` so Tailwind `w-*/h-*` classes can drive sizing.
   return (
     <Cmp
@@ -131,5 +151,5 @@ export function Icon({ name, size, className, title, ...rest }: IconProps) {
       aria-label={title}
       {...rest}
     />
-  )
+  );
 }

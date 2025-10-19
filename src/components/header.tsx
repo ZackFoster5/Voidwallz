@@ -17,7 +17,13 @@ import { supabase } from "@/lib/supabase-client";
 import SignupModal from "@/components/auth/signup-modal";
 import { Icon } from "@/components/ui/icon";
 
-export default function Header({ initialIsAuthed = false, initialName = null }: { initialIsAuthed?: boolean; initialName?: string | null }) {
+export default function Header({
+  initialIsAuthed = false,
+  initialName = null,
+}: {
+  initialIsAuthed?: boolean;
+  initialName?: string | null;
+}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(initialName);
@@ -27,8 +33,8 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
   // Prime UI from localStorage to further reduce flicker
   useEffect(() => {
     try {
-      const cached = localStorage.getItem('VW_AUTHED');
-      if (cached === '1') {
+      const cached = localStorage.getItem("VW_AUTHED");
+      if (cached === "1") {
         setIsAuthed(true);
       }
     } catch {}
@@ -40,7 +46,10 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       const u = session?.user;
-      const name = u ? `${(u.user_metadata as any)?.firstName || ''} ${(u.user_metadata as any)?.lastName || ''}`.trim() || u.email : null;
+      const name = u
+        ? `${(u.user_metadata as any)?.firstName || ""} ${(u.user_metadata as any)?.lastName || ""}`.trim() ||
+          u.email
+        : null;
       if (!ignore) {
         setIsAuthed(!!u);
         setDisplayName(name);
@@ -50,21 +59,29 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
     load();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setIsAuthed(!!session);
-      try { localStorage.setItem('VW_AUTHED', session ? '1' : '0'); } catch {}
+      try {
+        localStorage.setItem("VW_AUTHED", session ? "1" : "0");
+      } catch {}
       if (session?.user) {
         const u = session.user as any;
-        const name = `${u?.user_metadata?.firstName || ''} ${u?.user_metadata?.lastName || ''}`.trim() || u?.email || null;
+        const name =
+          `${u?.user_metadata?.firstName || ""} ${u?.user_metadata?.lastName || ""}`.trim() ||
+          u?.email ||
+          null;
         setDisplayName(name);
       } else {
         setDisplayName(null);
       }
       setInitialized(true);
     });
-    return () => { sub.subscription.unsubscribe(); };
+    return () => {
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const loggedOutNav = [
     { name: "Home", link: "/" },
+    { name: "Support", link: "/support" },
   ];
   const loggedInNav = [
     { name: "Feed", link: "/feed" },
@@ -72,8 +89,9 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
     { name: "Phone", link: "/phone" },
     { name: "Desktop", link: "/desktop" },
     { name: "Premium", link: "/premium" },
+    { name: "Support", link: "/support" },
   ];
-  const navItems = !initialized ? [] : (isAuthed ? loggedInNav : loggedOutNav);
+  const navItems = !initialized ? [] : isAuthed ? loggedInNav : loggedOutNav;
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -140,18 +158,19 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
           <div className="py-2">
             <ThemeToggle className="mx-auto" />
           </div>
-          {initialized && navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.link}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="relative text-foreground"
-            >
-              <span className="block font-mono uppercase tracking-wide">
-                {item.name}
-              </span>
-            </Link>
-          ))}
+          {initialized &&
+            navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.link}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="relative text-foreground"
+              >
+                <span className="block font-mono uppercase tracking-wide">
+                  {item.name}
+                </span>
+              </Link>
+            ))}
           {isAuthed ? (
             <div className="flex w-full gap-2">
               <Link
@@ -162,7 +181,10 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
                 Profile
               </Link>
               <button
-                onClick={() => { setIsMobileMenuOpen(false); signOut(); }}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  signOut();
+                }}
                 className="flex-1 rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground"
               >
                 Logout
@@ -170,7 +192,10 @@ export default function Header({ initialIsAuthed = false, initialName = null }: 
             </div>
           ) : (
             <button
-              onClick={() => { setShowSignup(true); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                setShowSignup(true);
+                setIsMobileMenuOpen(false);
+              }}
               className="w-full rounded-full px-4 py-3 text-center text-sm font-mono uppercase tracking-wide border-2 border-foreground bg-card text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] transition-all duration-150 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]"
             >
               Sign in / Sign up
