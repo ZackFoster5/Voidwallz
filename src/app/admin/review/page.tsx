@@ -24,17 +24,21 @@ export default function AdminReviewPage() {
       const res = await fetch('/api/community/review', { cache: 'no-store' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load')
-      setItems((data.submissions || []).map((s: any) => ({
-        id: s.id,
-        imageSecureUrl: s.imageSecureUrl,
-        title: s.title,
-        width: s.width,
-        height: s.height,
-        format: s.format,
-        description: s.description,
+      type ApiSubmission = {
+        id: string; imageSecureUrl: string; title: string; width: number; height: number; format: string; description?: string | null
+      }
+      const arr = (Array.isArray(data.submissions) ? data.submissions : []) as Partial<ApiSubmission>[]
+      setItems(arr.map((s) => ({
+        id: String(s.id ?? ''),
+        imageSecureUrl: String(s.imageSecureUrl ?? ''),
+        title: String(s.title ?? ''),
+        width: Number(s.width ?? 0),
+        height: Number(s.height ?? 0),
+        format: String(s.format ?? ''),
+        description: (s.description ?? null) as string | null,
       })))
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unexpected error')
     }
   }
 

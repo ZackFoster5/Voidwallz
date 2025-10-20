@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/modal";
 import { supabase } from "@/lib/supabase-client";
@@ -27,8 +27,27 @@ export default function SignupModal({
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showLoginPwd, setShowLoginPwd] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
   const [status, setStatus] = useState<GateState>("idle");
   const [message, setMessage] = useState<string | null>(null);
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedCreds = localStorage.getItem('savedLoginCredentials')
+    if (savedCreds) {
+      try {
+        const { email: savedEmail, password: savedPassword } = JSON.parse(atob(savedCreds))
+        setEmail(savedEmail)
+        setPassword(savedPassword)
+        setRememberMe(true)
+        setHasSavedCredentials(true)
+      } catch (e) {
+        // Invalid saved data, clear it
+        localStorage.removeItem('savedLoginCredentials')
+      }
+    }
+  }, [])
 
   const reset = () => {
     setFirstName("");
@@ -39,6 +58,8 @@ export default function SignupModal({
     setShowPwd(false);
     setShowConfirm(false);
     setShowLoginPwd(false);
+    setRememberMe(false);
+    setHasSavedCredentials(false);
     setStatus("idle");
     setMessage(null);
   };
@@ -103,6 +124,14 @@ export default function SignupModal({
         setMessage("No session created");
         return;
       }
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        const encodedCreds = btoa(JSON.stringify({ email, password }))
+        localStorage.setItem('savedLoginCredentials', encodedCreds)
+      } else {
+        localStorage.removeItem('savedLoginCredentials')
+      }
+      
       setStatus("success");
       setMessage("Logged in successfully");
       setTimeout(() => {
@@ -139,7 +168,7 @@ export default function SignupModal({
       }}
       className="rounded-2xl overflow-hidden border border-white/15 bg-black/40 shadow-2xl max-w-md md:max-w-lg"
     >
-      <div className="p-5 md:p-6 text-white">
+      <div className="p-4 text-white">
         {/* Tabs */}
         <div className="mx-auto mb-6 flex w-full justify-center">
           <div className="inline-flex rounded-full border border-white/20 bg-black/30 overflow-hidden">
@@ -176,7 +205,7 @@ export default function SignupModal({
           </div>
         </div>
 
-        <h1 className="text-center text-xl md:text-2xl font-extrabold font-mono uppercase tracking-tight mb-5">
+        <h1 className="text-center text-xl md:text-2xl font-extrabold font-mono uppercase tracking-tight mb-4">
           {tab === "signup" ? "Create an account" : "Welcome back"}
         </h1>
 
@@ -344,14 +373,14 @@ export default function SignupModal({
             </button>
           </form>
         ) : (
-          <form onSubmit={signIn} className="space-y-5">
+          <form onSubmit={signIn} className="space-y-4">
             <label className="block space-y-2">
               <span className="block text-xs font-mono uppercase tracking-widest text-foreground/70">
                 Email
               </span>
               <input
                 className={cn(
-                  "w-full px-4 py-3 border-2 border-foreground bg-background font-mono shadow-[4px_4px_0px_0px_var(--color-foreground)] focus:outline-none focus:bg-card",
+                  "w-full px-3.5 py-2.5 rounded-md border border-white/25 bg-black/30 text-white placeholder-white/60 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:bg-black/40",
                 )}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -366,7 +395,7 @@ export default function SignupModal({
               <div className="relative">
                 <input
                   className={cn(
-                    "w-full px-4 py-3 pr-9 border-2 border-foreground bg-background font-mono shadow-[4px_4px_0px_0px_var(--color-foreground)] focus:outline-none focus:bg-card",
+                    "w-full px-3.5 py-2.5 pr-9 rounded-md border border-white/25 bg-black/30 text-white placeholder-white/60 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:bg-black/40",
                   )}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -377,7 +406,7 @@ export default function SignupModal({
                   type="button"
                   aria-label={showLoginPwd ? "Hide password" : "Show password"}
                   onClick={() => setShowLoginPwd((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-foreground/70 hover:text-foreground"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-white/70 hover:text-white"
                 >
                   {showLoginPwd ? (
                     <svg
@@ -410,18 +439,65 @@ export default function SignupModal({
                 </button>
               </div>
             </label>
+
+            {/* Remember Me Checkbox */}
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded border-2 border-white/25 bg-black/30 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 cursor-pointer"
+              />
+              <span className="text-xs font-mono text-white/70">
+                Remember me on this device
+              </span>
+            </label>
+
+            {/* Quick Login Button (shown when credentials are saved) */}
+            {hasSavedCredentials && (
+              <button
+                type="button"
+                onClick={signIn}
+                className={cn(
+                  "w-full px-5 py-2.5 rounded-md border border-white/25 bg-black/30 text-white font-mono font-bold uppercase tracking-wide hover:bg-black/40 hover:border-white/40 hover:translate-x-0.5 hover:translate-y-0.5 transition-all duration-200",
+                )}
+              >
+                ⚡ Quick Login
+              </button>
+            )}
+
             <button
               type="submit"
               className={cn(
-                "w-full px-6 py-3 border-2 border-foreground bg-primary text-background font-mono font-bold uppercase tracking-wide shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:translate-x-1 hover:translate-y-1",
+                "w-full px-5 py-2.5 rounded-md border border-white/20 bg-primary text-black font-mono font-bold uppercase tracking-wide hover:translate-x-0.5 hover:translate-y-0.5",
               )}
             >
               Sign in
             </button>
+
+            {/* Forget Credentials Button */}
+            {hasSavedCredentials && (
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('savedLoginCredentials')
+                  setEmail('')
+                  setPassword('')
+                  setRememberMe(false)
+                  setHasSavedCredentials(false)
+                  setMessage('Saved credentials removed')
+                  setStatus('idle')
+                  setTimeout(() => setMessage(null), 2000)
+                }}
+                className="w-full text-center font-mono text-xs text-red-400 hover:text-red-300 underline"
+              >
+                Forget saved credentials
+              </button>
+            )}
           </form>
         )}
 
-        <div className="my-5">
+        <div className="my-4">
           <div className="text-center mb-2">
             <span className="font-mono text-[11px] uppercase tracking-normal text-white/70">
               Or continue with

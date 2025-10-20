@@ -1,20 +1,80 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { FadeInUp } from '@/components/scroll-animations'
-import { supabase } from '@/lib/supabase-client'
 
 type GateState = 'idle' | 'success' | 'error'
 
-interface LoginClientProps {}
-
-export default function LoginClient({}: LoginClientProps) {
+export default function LoginClient() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const [hasSavedCredentials, setHasSavedCredentials] = useState(false)
   const [status, setStatus] = useState<GateState>('idle')
   const [message, setMessage] = useState<string | null>(null)
+  const [isQuickLogin, setIsQuickLogin] = useState(false)
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedCreds = localStorage.getItem('savedLoginCredentials')
+    if (savedCreds) {
+      try {
+        const { email: savedEmail, password: savedPassword } = JSON.parse(atob(savedCreds))
+        setEmail(savedEmail)
+        setPassword(savedPassword)
+        setRememberMe(true)
+        setHasSavedCredentials(true)
+      } catch (e) {
+        // Invalid saved data, clear it
+        localStorage.removeItem('savedLoginCredentials')
+      }
+    }
+  }, [])
+
+  const handleQuickLogin = async () => {
+    setIsQuickLogin(true)
+    setStatus('idle')
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: email, password })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        setStatus('error')
+        setMessage(data.error || 'Login failed')
+        setIsQuickLogin(false)
+        return
+      }
+      
+      setStatus('success')
+      setMessage('Logged in successfully')
+      setTimeout(() => {
+        window.location.href = '/gallery'
+      }, 600)
+    } catch (e) {
+      setStatus('error')
+      setMessage('Network error')
+      setIsQuickLogin(false)
+    }
+  }
+
+  const handleForgetCredentials = () => {
+    localStorage.removeItem('savedLoginCredentials')
+    setEmail('')
+    setPassword('')
+    setRememberMe(false)
+    setHasSavedCredentials(false)
+    setMessage('Saved credentials removed')
+    setStatus('idle')
+    setTimeout(() => setMessage(null), 2000)
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -22,21 +82,31 @@ export default function LoginClient({}: LoginClientProps) {
     setMessage(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: email, password })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
         setStatus('error')
-        setMessage(error.message)
+        setMessage(data.error || 'Login failed')
         return
       }
-      if (!data.session) {
-        setStatus('error')
-        setMessage('No session created')
-        return
+      
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        const encodedCreds = btoa(JSON.stringify({ email, password }))
+        localStorage.setItem('savedLoginCredentials', encodedCreds)
+      } else {
+        localStorage.removeItem('savedLoginCredentials')
       }
+      
       setStatus('success')
       setMessage('Logged in successfully')
       setTimeout(() => {
-        window.location.href = '/feed'
+        window.location.href = '/gallery'
       }, 600)
     } catch (e) {
       setStatus('error')
@@ -103,6 +173,41 @@ export default function LoginClient({}: LoginClientProps) {
                 />
               </label>
 
+              {/* Remember Me Checkbox */}
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className={cn(
+                    'w-5 h-5 border-2 border-foreground bg-background cursor-pointer',
+                    'checked:bg-primary checked:border-foreground',
+                    'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+                  )}
+                />
+                <span className="text-sm font-mono text-foreground/70">
+                  Remember me on this device
+                </span>
+              </label>
+
+              {/* Quick Login Button (shown when credentials are saved) */}
+              {hasSavedCredentials && (
+                <button
+                  type="button"
+                  onClick={handleQuickLogin}
+                  disabled={isQuickLogin}
+                  className={cn(
+                    'w-full px-6 py-3 border-2 border-foreground bg-accent text-foreground',
+                    'font-mono font-bold uppercase tracking-wide',
+                    'shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_var(--color-foreground)]',
+                    'active:translate-x-2 active:translate-y-2 active:shadow-none transition-all duration-150',
+                    'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0'
+                  )}
+                >
+                  {isQuickLogin ? '⚡ Logging in...' : '⚡ Quick Login'}
+                </button>
+              )}
+
               <button
                 type="submit"
                 className={cn(
@@ -114,6 +219,17 @@ export default function LoginClient({}: LoginClientProps) {
               >
                 Sign in
               </button>
+
+              {/* Forget Credentials Button */}
+              {hasSavedCredentials && (
+                <button
+                  type="button"
+                  onClick={handleForgetCredentials}
+                  className="w-full text-center font-mono text-xs text-red-500 hover:text-red-400 underline"
+                >
+                  Forget saved credentials
+                </button>
+              )}
             </form>
 
             {/* messages */}

@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -14,8 +14,9 @@ export async function POST(
     const ipAddress = forwarded ? forwarded.split(',')[0] : 'unknown'
 
     // Check if wallpaper exists
+    const { id } = await params
     const wallpaper = await db.wallpaper.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!wallpaper) {
@@ -28,7 +29,7 @@ export async function POST(
     // Create download record
     await db.download.create({
       data: {
-        wallpaperId: params.id,
+        wallpaperId: id,
         userId: userId || null,
         ipAddress,
         userAgent,
@@ -38,7 +39,7 @@ export async function POST(
 
     // Update wallpaper download count
     await db.wallpaper.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         downloadsCount: {
           increment: 1

@@ -3,13 +3,14 @@ import { db } from '@/lib/db'
 import { getOrCreateProfile } from '@/lib/premium'
 import { generateCloudinaryZip, extractPublicIdFromUrl } from '@/lib/cloudinary'
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
+    const { id } = await params
     const collection = await db.collection.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: true },
     })
     if (!collection || collection.profileId !== profile.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })

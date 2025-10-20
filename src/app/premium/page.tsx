@@ -67,23 +67,54 @@ const pricingPlans = [
 export default function PremiumPage() {
   const [selectedPlan, setSelectedPlan] = useState('YEARLY')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handlePurchase = async (planName: string) => {
     setIsProcessing(true)
-    // Simulate payment processing
-    console.log('Processing payment for:', planName)
+    setError(null)
     
-    // In real app, integrate with Stripe, PayPal, etc.
-    setTimeout(() => {
+    try {
+      // Map plan names to Stripe plan types
+      const planType = planName === 'LIFETIME' ? 'LIFETIME' : 'PREMIUM'
+      
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planType })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      const { url } = await response.json()
+      
+      // Redirect to Stripe Checkout
+      if (url) {
+        window.location.href = url
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to start checkout')
       setIsProcessing(false)
-      alert(`Thank you! Your ${planName} subscription is being processed.`)
-    }, 2000)
+    }
   }
 
   return (
     <RequireAuth>
       <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
+        {/* Error Message */}
+        {error && (
+          <FadeInUp>
+            <div className="card-brutalist border-red-500 bg-red-500/10 text-red-500 px-6 py-4 font-mono text-sm mb-8 text-center">
+              <Icon name="exclamation-circle" className="w-5 h-5 inline mr-2" />
+              {error}
+            </div>
+          </FadeInUp>
+        )}
+
         {/* Header */}
         <FadeInUp>
           <div className="text-center mb-16">

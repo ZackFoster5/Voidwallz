@@ -25,7 +25,7 @@ async function getOrCreateCategoryBySlug(slug: string, nameFallback?: string) {
   return cat
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const uid = requireAdmin(req)
     if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -36,7 +36,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const body = (await req.json().catch(() => ({}))) as { categorySlug?: string; moderationNotes?: string }
 
-    const submission = await db.submission.findUnique({ where: { id: params.id } })
+    const { id } = await params
+    const submission = await db.submission.findUnique({ where: { id } })
     if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     if (submission.status !== 'PENDING') return NextResponse.json({ error: 'Not pending' }, { status: 400 })
 

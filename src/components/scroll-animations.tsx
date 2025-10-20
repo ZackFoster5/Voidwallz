@@ -15,7 +15,7 @@ function useMotionInView<T extends HTMLElement>(margin = '-100px') {
   const shouldReduceMotion = prefersReducedMotion()
   const isInView = useInView(ref, {
     once: true,
-    margin,
+    margin: margin as unknown as never,
   })
 
   return { ref, shouldReduceMotion, isInView: shouldReduceMotion ? true : isInView }

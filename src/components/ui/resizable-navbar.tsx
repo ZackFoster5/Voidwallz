@@ -7,6 +7,8 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
+import Link from "next/link";
+import Image from "next/image";
 
 import React, { useRef, useState } from "react";
 
@@ -129,7 +131,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
       )}
     >
       {items.map((item, idx) => (
-        <a
+        <Link
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
           className="relative px-4 py-2 text-foreground pointer-events-auto font-semibold"
@@ -143,7 +145,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
             />
           )}
           <span className="relative z-20">{item.name}</span>
-        </a>
+        </Link>
       ))}
     </motion.div>
   );
@@ -236,18 +238,18 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = () => {
   return (
-    <a
+    <Link
       href="/"
       className="relative z-20 mr-2 flex items-center space-x-2 px-2 py-1 text-sm font-mono font-bold text-foreground"
     >
-      <img
+      <Image
         src="/Final Logo.svg"
         alt="Voidwallz logo"
         width={28}
         height={28}
       />
       <span className="tracking-wide">VOIDWALLZ</span>
-    </a>
+    </Link>
   );
 };
 

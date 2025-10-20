@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getOrCreateProfile } from '@/lib/premium'
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const id = params.id
+    const { id } = await params
     const found = await db.deviceProfile.findUnique({ where: { id } })
     if (!found || found.profileId !== profile.id) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })

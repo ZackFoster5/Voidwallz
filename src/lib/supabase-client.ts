@@ -1,14 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-if (!supabaseUrl) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_URL is not defined')
+// Only initialize Supabase if credentials are provided
+let supabase: ReturnType<typeof createClient> | null = null
+
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey)
+} else {
+  // Create a dummy client that won't crash
+  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key')
 }
 
-if (!supabaseAnonKey) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export { supabase }

@@ -80,7 +80,7 @@ export default function VoidAIPage() {
               
               <div className="p-5 border-2 border-foreground bg-card">
                 <div className="flex items-center gap-2 mb-3">
-                  <Icon name="tag" className="w-5 h-5 text-primary" />
+                  <Icon name="sparkles" className="w-5 h-5 text-primary" />
                   <h3 className="font-mono font-bold uppercase text-sm">2. Auto-Tag</h3>
                 </div>
                 <p className="text-sm text-foreground/70">
@@ -126,7 +126,7 @@ export default function VoidAIPage() {
           <div className="card-brutalist p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <Icon name="clock" className="w-6 h-6 text-primary" />
+                <Icon name="calendar-days" className="w-6 h-6 text-primary" />
                 <h2 className="text-xl font-bold font-mono uppercase tracking-wide">Recent Featured</h2>
               </div>
               <span className="text-xs font-mono uppercase tracking-wide text-foreground/60">24h window</span>
@@ -179,9 +179,9 @@ export default function VoidAIPage() {
 
         {/* Info Card */}
         <FadeInUp delay={0.25}>
-          <div className="mt-8 p-4 border-2 border-primary/50 bg-primary/5">
+              <div className="mt-8 p-4 border-2 border-primary/50 bg-primary/5">
             <div className="flex items-start gap-3">
-              <Icon name="information-circle" className="w-5 h-5 text-primary mt-0.5" />
+              <Icon name="info" className="w-5 h-5 text-primary mt-0.5" />
               <div className="text-sm text-foreground/70">
                 <p className="mb-2">
                   <strong className="text-foreground">VoidAI Auto-Tagging</strong> runs automatically whenever you upload a new wallpaper. 

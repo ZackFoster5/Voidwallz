@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 import Header from './header'
 
 export default async function HeaderServer() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,8 +26,9 @@ export default async function HeaderServer() {
   const { data } = await supabase.auth.getSession()
   const session = data.session
   const user = session?.user
-  const meta = (user?.user_metadata || {}) as Record<string, any>
-  const initialName = [meta.firstName, meta.lastName].filter(Boolean).join(' ') || user?.email || null
+  type UserMeta = { firstName?: string; lastName?: string }
+  const meta = (user?.user_metadata || {}) as UserMeta
+  const initialName = [meta.firstName ?? '', meta.lastName ?? ''].filter(Boolean).join(' ') || user?.email || null
 
   return (
     <Header initialIsAuthed={!!session} initialName={initialName} />

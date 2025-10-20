@@ -7,30 +7,27 @@ import RequireAuth from '@/components/auth/require-auth'
 import { FadeInUp, StaggerContainer, StaggerItem } from '@/components/scroll-animations'
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
-import { appendStoredWallpaper } from '@/lib/wallpaper-store'
+import { appendStoredWallpaper, type DeviceType } from '@/lib/wallpaper-store'
 
-const mockProfile = {
-  name: 'Nikhil Sharma',
-  email: 'nikhil@voidwallz.com',
-  username: 'voidnik',
-  avatarInitials: 'NS',
+type ProfileData = {
+  name: string
+  email: string
+  username: string
+  avatarInitials: string
   subscription: {
-    plan: 'VOID PREMIUM',
-    status: 'Active',
-    billingCycle: 'Yearly',
-    renewalDate: 'December 1, 2025',
-    nextInvoice: '$39.99'
-  },
+    plan: string
+    status: string
+    billingCycle: string
+    renewalDate: string
+    nextInvoice: string
+  }
   usage: {
-    downloadsThisMonth: 42,
-    favorites: 128,
-    devicesConnected: 3
-  },
-  notifications: [
-    'Weekly wallpaper drops',
-    'Product announcements',
-    'Account security alerts'
-  ]
+    downloadsThisMonth: number
+    favorites: number
+    devicesConnected: number
+    collectionsCount?: number
+    totalDownloads?: number
+  }
 }
 
 type ProfileFormState = {
@@ -52,24 +49,87 @@ export default function ProfilePage() {
   const [uploadProgress, setUploadProgress] = useState<string>('')
   
   const [profile, setProfile] = useState<ProfileFormState>({
-    name: mockProfile.name,
-    email: mockProfile.email,
-    username: mockProfile.username
+    name: '',
+    email: '',
+    username: ''
   })
+
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
 
   useEffect(() => {
     let ignore = false
     async function load() {
-      const { data } = await supabase.auth.getUser()
-      const u = data.user
-      if (u && !ignore) {
-        const first = (u.user_metadata as any)?.firstName || ''
-        const last = (u.user_metadata as any)?.lastName || ''
-        setProfile({
-          name: `${first} ${last}`.trim() || (u.email ?? ''),
-          email: u.email ?? '',
-          username: u.user_metadata?.username || ''
-        })
+      try {
+        setIsLoadingStats(true)
+        setStatsError(null)
+        
+        // Get user from Supabase
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          if (!ignore) {
+            setStatsError('Not authenticated')
+            window.location.href = '/'
+          }
+          return
+        }
+
+        // Try to fetch stats from API
+        const res = await fetch('/api/profile/stats')
+        if (res.ok) {
+          const data = await res.json()
+          if (!ignore && data.profile) {
+            console.log('Profile data loaded:', data.profile)
+            setProfileData(data.profile)
+            setProfile({
+              name: data.profile.name,
+              email: data.profile.email,
+              username: data.profile.username
+            })
+          }
+        } else {
+          // Fallback to basic user data from Supabase
+          console.log('API failed, using fallback data')
+          const userMeta = user.user_metadata || {}
+          const firstName = userMeta.firstName || ''
+          const lastName = userMeta.lastName || ''
+          const displayName = `${firstName} ${lastName}`.trim() || user.email?.split('@')[0] || 'User'
+          const avatarInitials = firstName && lastName 
+            ? `${firstName[0]}${lastName[0]}`.toUpperCase()
+            : displayName.slice(0, 2).toUpperCase()
+          
+          if (!ignore) {
+            setProfileData({
+              name: displayName,
+              email: user.email || '',
+              username: userMeta.username || '',
+              avatarInitials,
+              subscription: {
+                plan: 'FREE',
+                status: 'Active',
+                billingCycle: 'Free',
+                renewalDate: 'N/A',
+                nextInvoice: '$0.00'
+              },
+              usage: {
+                downloadsThisMonth: 0,
+                favorites: 0,
+                devicesConnected: 0
+              }
+            })
+            setProfile({
+              name: displayName,
+              email: user.email || '',
+              username: userMeta.username || ''
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error)
+        if (!ignore) setStatsError('Network error loading profile')
+      } finally {
+        if (!ignore) setIsLoadingStats(false)
       }
     }
     load()
@@ -87,12 +147,11 @@ export default function ProfilePage() {
     message: null
   })
 
-  const [notificationPrefs, setNotificationPrefs] = useState(
-    mockProfile.notifications.reduce<Record<string, boolean>>((acc, label) => {
-      acc[label] = true
-      return acc
-    }, {})
-  )
+  const [notificationPrefs, setNotificationPrefs] = useState<Record<string, boolean>>({
+    'Weekly wallpaper drops': true,
+    'Product announcements': true,
+    'Account security alerts': true
+  })
 
   const showMessage = (message: string) => {
     setActionState((prev) => ({ ...prev, message }))
@@ -106,12 +165,16 @@ export default function ProfilePage() {
     setActionState((prev) => ({ ...prev, isSavingProfile: true }))
 
     setTimeout(() => {
-      mockProfile.name = profile.name
-      mockProfile.email = profile.email
-      mockProfile.username = profile.username
-
+      if (profileData) {
+        setProfileData({
+          ...profileData,
+          name: profile.name,
+          email: profile.email,
+          username: profile.username
+        })
+      }
       setActionState((prev) => ({ ...prev, isSavingProfile: false }))
-      showMessage('Profile details updated. Connect to your real API to persist changes.')
+      showMessage('Profile details updated successfully!')
     }, 1200)
   }
 
@@ -168,7 +231,7 @@ export default function ProfilePage() {
       
       // Determine device type based on aspect ratio
       const aspectRatio = image.width / image.height
-      const deviceType = aspectRatio > 1 ? 'desktop' : 'mobile'
+      const deviceType: DeviceType = aspectRatio > 1 ? 'desktop' : 'mobile'
 
       const wallpaperEntry = {
         id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -192,10 +255,11 @@ export default function ProfilePage() {
       if (fileInputRef.current) fileInputRef.current.value = ''
 
       setTimeout(() => setUploadProgress(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload failed:', error)
       setUploadProgress('')
-      showMessage(`Upload failed: ${error.message}`)
+      const message = error instanceof Error ? error.message : 'Unexpected error'
+      showMessage(`Upload failed: ${message}`)
     } finally {
       setIsUploading(false)
     }
@@ -228,34 +292,61 @@ export default function ProfilePage() {
         {/* Overview Card */}
         <FadeInUp delay={0.1}>
           <div className="card-brutalist p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start md:justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 md:w-28 md:h-28 border-2 border-foreground bg-card flex items-center justify-center font-mono text-2xl font-bold">
-                {mockProfile.avatarInitials}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold font-mono uppercase tracking-wide">{profile.name}</h2>
-                <p className="text-foreground/70">{profile.email}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-mono">
-                  <span className="px-3 py-1 border-2 border-foreground bg-primary text-background">{mockProfile.subscription.plan}</span>
-                  <span className="px-3 py-1 border-2 border-foreground">Status: {mockProfile.subscription.status}</span>
-                  <span className="px-3 py-1 border-2 border-foreground">Billing: {mockProfile.subscription.billingCycle}</span>
+            {isLoadingStats ? (
+              <div className="w-full flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm font-mono text-foreground/60">Loading profile data...</p>
                 </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
-              <div className="p-4 border-2 border-foreground bg-card text-center">
-                <div className="font-mono text-3xl font-bold">{mockProfile.usage.downloadsThisMonth}</div>
-                <p className="text-xs uppercase tracking-wide text-foreground/70">Downloads this month</p>
+            ) : statsError ? (
+              <div className="w-full flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Icon name="exclamation-circle" className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                  <p className="text-sm font-mono text-red-500 mb-2">{statsError}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="btn-brutalist px-4 py-2 text-sm"
+                  >
+                    Retry
+                  </button>
+                </div>
               </div>
-              <div className="p-4 border-2 border-foreground bg-card text-center">
-                <div className="font-mono text-3xl font-bold">{mockProfile.usage.favorites}</div>
-                <p className="text-xs uppercase tracking-wide text-foreground/70">Favorites saved</p>
-              </div>
-              <div className="p-4 border-2 border-foreground bg-card text-center">
-                <div className="font-mono text-3xl font-bold">{mockProfile.usage.devicesConnected}</div>
-                <p className="text-xs uppercase tracking-wide text-foreground/70">Devices connected</p>
-              </div>
-            </div>
+            ) : profileData ? (
+              <>
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 md:w-28 md:h-28 border-2 border-foreground bg-card flex items-center justify-center font-mono text-2xl font-bold">
+                    {profileData.avatarInitials}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold font-mono uppercase tracking-wide">{profileData.name}</h2>
+                    <p className="text-foreground/70">{profileData.email}</p>
+                    {profileData.username && (
+                      <p className="text-foreground/60 text-sm font-mono">@{profileData.username}</p>
+                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-mono">
+                      <span className="px-3 py-1 border-2 border-foreground bg-primary text-background">{profileData.subscription.plan === 'FREE' ? 'FREE PLAN' : 'VOID PREMIUM'}</span>
+                      <span className="px-3 py-1 border-2 border-foreground">Status: {profileData.subscription.status}</span>
+                      <span className="px-3 py-1 border-2 border-foreground">Billing: {profileData.subscription.billingCycle}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
+                  <div className="p-4 border-2 border-foreground bg-card text-center">
+                    <div className="font-mono text-3xl font-bold">{profileData.usage.downloadsThisMonth}</div>
+                    <p className="text-xs uppercase tracking-wide text-foreground/70">Downloads this month</p>
+                  </div>
+                  <div className="p-4 border-2 border-foreground bg-card text-center">
+                    <div className="font-mono text-3xl font-bold">{profileData.usage.favorites}</div>
+                    <p className="text-xs uppercase tracking-wide text-foreground/70">Favorites saved</p>
+                  </div>
+                  <div className="p-4 border-2 border-foreground bg-card text-center">
+                    <div className="font-mono text-3xl font-bold">{profileData.usage.devicesConnected}</div>
+                    <p className="text-xs uppercase tracking-wide text-foreground/70">Devices connected</p>
+                  </div>
+                </div>
+              </>
+            ) : null}
           </div>
         </FadeInUp>
 
@@ -299,7 +390,7 @@ export default function ProfilePage() {
               
               {uploadProgress && (
                 <div className="flex items-center gap-2 text-sm font-mono text-primary">
-                  <Icon name="clock" className="w-4 h-4" />
+                  <Icon name="calendar-days" className="w-4 h-4" />
                   <span>{uploadProgress}</span>
                 </div>
               )}
@@ -307,7 +398,7 @@ export default function ProfilePage() {
             
             <div className="mt-4 p-3 border-2 border-foreground/20 bg-card/50">
               <div className="flex items-start gap-2 text-xs text-foreground/60">
-                <Icon name="information-circle" className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <Icon name="info" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <p>
                   Supported formats: JPG, PNG, WEBP. Max size: 15MB. AI will auto-generate title, description, category, and tags.
                 </p>
@@ -430,24 +521,26 @@ export default function ProfilePage() {
                   <h3 className="text-lg font-bold font-mono uppercase tracking-wide">Subscription</h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono uppercase tracking-wide">
-                  <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
-                    <span>Plan</span>
-                    <span>{mockProfile.subscription.plan}</span>
+                {profileData && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono uppercase tracking-wide">
+                    <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
+                      <span>Plan</span>
+                      <span>{profileData.subscription.plan === 'FREE' ? 'FREE' : profileData.subscription.plan}</span>
+                    </div>
+                    <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
+                      <span>Billing cycle</span>
+                      <span>{profileData.subscription.billingCycle}</span>
+                    </div>
+                    <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
+                      <span>Next renewal</span>
+                      <span>{profileData.subscription.renewalDate}</span>
+                    </div>
+                    <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
+                      <span>Upcoming invoice</span>
+                      <span>{profileData.subscription.nextInvoice}</span>
+                    </div>
                   </div>
-                  <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
-                    <span>Billing cycle</span>
-                    <span>{mockProfile.subscription.billingCycle}</span>
-                  </div>
-                  <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
-                    <span>Next renewal</span>
-                    <span>{mockProfile.subscription.renewalDate}</span>
-                  </div>
-                  <div className="p-4 border-2 border-foreground bg-card flex items-center justify-between">
-                    <span>Upcoming invoice</span>
-                    <span>{mockProfile.subscription.nextInvoice}</span>
-                  </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button

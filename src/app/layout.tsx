@@ -59,7 +59,6 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="dark">
           <div className="min-h-screen bg-background text-foreground">
             {/* Server-side header to remove auth flicker */}
-            {/* @ts-expect-error Server Component */}
             <HeaderServer />
             <main>{children}</main>
           </div>

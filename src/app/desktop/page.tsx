@@ -51,7 +51,6 @@ export default async function DesktopPage() {
 
   return (
     <Suspense fallback={<div className="p-8 text-center">Loading desktop gallery…</div>}>
-      {/* @ts-expect-error Server component embedding client guard */}
       <RequireAuth>
         <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="desktop" title="DESKTOP" />
       </RequireAuth>

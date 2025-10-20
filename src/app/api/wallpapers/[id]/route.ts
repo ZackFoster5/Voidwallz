@@ -3,11 +3,12 @@ import { db } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const wallpaper = await db.wallpaper.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: true,
         tags: {
@@ -44,7 +45,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -58,8 +59,9 @@ export async function PUT(
     } = body
 
     // Update wallpaper
+    const { id } = await params
     const wallpaper = await db.wallpaper.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         slug: title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined,
@@ -82,7 +84,7 @@ export async function PUT(
     if (tags) {
       // Remove existing tags
       await db.wallpaperTag.deleteMany({
-        where: { wallpaperId: params.id }
+        where: { wallpaperId: id }
       })
 
       // Add new tags
@@ -98,7 +100,7 @@ export async function PUT(
 
         await db.wallpaperTag.create({
           data: {
-            wallpaperId: params.id,
+            wallpaperId: id,
             tagId: tag.id
           }
         })
@@ -117,12 +119,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get wallpaper to update category count
+    const { id } = await params
     const wallpaper = await db.wallpaper.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { categoryId: true }
     })
 
@@ -135,7 +138,7 @@ export async function DELETE(
 
     // Delete wallpaper (cascade will handle related records)
     await db.wallpaper.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     // Update category wallpaper count

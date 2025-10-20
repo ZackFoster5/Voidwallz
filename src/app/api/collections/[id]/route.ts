@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getOrCreateProfile } from '@/lib/premium'
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
+    const { id } = await params
     const collection = await db.collection.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: true, children: true },
     })
     if (!collection || collection.profileId !== profile.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -20,18 +21,19 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const body = (await req.json().catch(() => ({}))) as { name?: string; isPrivate?: boolean }
 
-    const existing = await db.collection.findUnique({ where: { id: params.id } })
+    const { id } = await params
+    const existing = await db.collection.findUnique({ where: { id } })
     if (!existing || existing.profileId !== profile.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     const updated = await db.collection.update({
-      where: { id: params.id },
+      where: { id },
       data: { name: body.name ?? existing.name, isPrivate: typeof body.isPrivate === 'boolean' ? body.isPrivate : existing.isPrivate },
     })
     return NextResponse.json(updated)
@@ -41,15 +43,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const existing = await db.collection.findUnique({ where: { id: params.id } })
+    const { id } = await params
+    const existing = await db.collection.findUnique({ where: { id } })
     if (!existing || existing.profileId !== profile.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    await db.collection.delete({ where: { id: params.id } })
+    await db.collection.delete({ where: { id } })
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('collection DELETE error', e)

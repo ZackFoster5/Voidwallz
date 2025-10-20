@@ -3,12 +3,13 @@ import { db } from '@/lib/db'
 import { getOrCreateProfile } from '@/lib/premium'
 import { extractPublicIdFromUrl } from '@/lib/cloudinary'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-    const collection = await db.collection.findUnique({ where: { id: params.id } })
+    const { id } = await params
+    const collection = await db.collection.findUnique({ where: { id } })
     if (!collection || collection.profileId !== profile.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     const body = (await req.json().catch(() => ({}))) as {

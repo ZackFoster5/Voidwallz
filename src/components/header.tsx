@@ -26,7 +26,6 @@ export default function Header({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-  const [displayName, setDisplayName] = useState<string | null>(initialName);
   const [isAuthed, setIsAuthed] = useState(initialIsAuthed);
   const [initialized, setInitialized] = useState(false);
 
@@ -41,18 +40,13 @@ export default function Header({
   }, []);
 
   useEffect(() => {
-    let ignore = false;
+    let cancelled = false;
     async function load() {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       const u = session?.user;
-      const name = u
-        ? `${(u.user_metadata as any)?.firstName || ""} ${(u.user_metadata as any)?.lastName || ""}`.trim() ||
-          u.email
-        : null;
-      if (!ignore) {
+      if (!cancelled) {
         setIsAuthed(!!u);
-        setDisplayName(name);
         setInitialized(true);
       }
     }
@@ -62,34 +56,21 @@ export default function Header({
       try {
         localStorage.setItem("VW_AUTHED", session ? "1" : "0");
       } catch {}
-      if (session?.user) {
-        const u = session.user as any;
-        const name =
-          `${u?.user_metadata?.firstName || ""} ${u?.user_metadata?.lastName || ""}`.trim() ||
-          u?.email ||
-          null;
-        setDisplayName(name);
-      } else {
-        setDisplayName(null);
-      }
       setInitialized(true);
     });
     return () => {
+      cancelled = true;
       sub.subscription.unsubscribe();
     };
   }, []);
 
   const loggedOutNav = [
     { name: "Home", link: "/" },
-    { name: "Support", link: "/support" },
   ];
   const loggedInNav = [
-    { name: "Feed", link: "/feed" },
-    { name: "Community", link: "/community" },
     { name: "Phone", link: "/phone" },
     { name: "Desktop", link: "/desktop" },
     { name: "Premium", link: "/premium" },
-    { name: "Support", link: "/support" },
   ];
   const navItems = !initialized ? [] : isAuthed ? loggedInNav : loggedOutNav;
 

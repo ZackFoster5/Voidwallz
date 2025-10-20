@@ -133,9 +133,11 @@ export async function uploadWallpaperBuffer({
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength,
   );
+  // Ensure BlobPart is a typed array to avoid SharedArrayBuffer type issues
+  const uint8 = new Uint8Array(arrayBuffer as ArrayBuffer);
   formData.append(
     "file",
-    new Blob([arrayBuffer], { type: mimeType }),
+    new Blob([uint8], { type: mimeType }),
     filename ?? publicId,
   );
   formData.append("api_key", apiKey);
@@ -352,7 +354,7 @@ export async function generateCloudinaryZip(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/generate_archive`,
   );
 
-  const body: Record<string, any> = {
+  const body: Record<string, unknown> = {
     public_ids: publicIds,
     target_format: "zip",
     flatten_folders: opts.flattenFolders ?? true,
@@ -419,9 +421,9 @@ export function normalizeCloudinaryResource(
 
   // Merge in comma- or pipe-separated tag strings from context/metadata keys named "tags"
   const tagStrings: Array<unknown> = [];
-  if (typeof (ctx as any).tags === "string") tagStrings.push((ctx as any).tags);
-  if (typeof (meta as any).tags === "string")
-    tagStrings.push((meta as any).tags);
+  if (typeof (ctx as Record<string, unknown>)['tags'] === "string") tagStrings.push((ctx as Record<string, unknown>)['tags']);
+  if (typeof (meta as Record<string, unknown>)['tags'] === "string")
+    tagStrings.push((meta as Record<string, unknown>)['tags']);
   for (const s of tagStrings) {
     if (typeof s === "string") {
       s.split(/[,|]/)
@@ -441,7 +443,9 @@ export function normalizeCloudinaryResource(
     v === "1" ||
     (typeof v === "string" && v.toLowerCase() === "true");
   for (const k of featureKeys) {
-    if (isTrue((ctx as any)[k]) || isTrue((meta as any)[k])) {
+    const ctxVal = (ctx as Record<string, unknown>)[k as keyof typeof ctx]
+    const metaVal = (meta as Record<string, unknown>)[k as keyof typeof meta]
+    if (isTrue(ctxVal) || isTrue(metaVal)) {
       if (!tags.map((t) => t.toLowerCase()).includes("featured"))
         tags.push("featured");
       break;
@@ -449,7 +453,7 @@ export function normalizeCloudinaryResource(
   }
 
   // Category override via context/metadata if provided
-  const catOverrideRaw = (ctx as any).category ?? (meta as any).category;
+  const catOverrideRaw = (ctx as Record<string, unknown>)['category'] ?? (meta as Record<string, unknown>)['category'];
   const category = (
     catOverrideRaw && typeof catOverrideRaw === "string"
       ? catOverrideRaw

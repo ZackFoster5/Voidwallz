@@ -15,7 +15,7 @@ function requireAdmin(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const uid = requireAdmin(req)
     if (!uid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,7 +26,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const body = (await req.json().catch(() => ({}))) as { moderationNotes?: string }
 
-    const sub = await db.submission.findUnique({ where: { id: params.id } })
+    const { id } = await params
+    const sub = await db.submission.findUnique({ where: { id } })
     if (!sub) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     if (sub.status !== 'PENDING') return NextResponse.json({ error: 'Not pending' }, { status: 400 })
 

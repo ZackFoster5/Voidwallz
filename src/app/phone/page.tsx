@@ -51,7 +51,6 @@ export default async function PhonePage() {
 
   return (
     <Suspense fallback={<div className="p-8 text-center">Loading phone gallery…</div>}>
-      {/* @ts-expect-error Server component embedding client guard */}
       <RequireAuth>
         <GalleryClient baseWallpapers={baseWallpapers} fixedDevice="mobile" title="PHONE" />
       </RequireAuth>

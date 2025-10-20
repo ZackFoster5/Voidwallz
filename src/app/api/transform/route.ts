@@ -36,10 +36,10 @@ export async function GET(req: NextRequest) {
     if (!Number.isNaN(w)) opts.width = w
     if (!Number.isNaN(h)) opts.height = h
 
-    const fit = searchParams.get('fit') as any
+    const fit = searchParams.get('fit') as 'fill' | 'pad' | 'fit' | null
     if (fit && ['fill','pad','fit'].includes(fit)) opts.fit = fit
 
-    const gravity = searchParams.get('g') as any
+    const gravity = searchParams.get('g') as 'auto' | 'auto:subject' | 'face' | 'center' | null
     if (gravity && ['auto','auto:subject','face','center'].includes(gravity)) opts.gravity = gravity
 
     const saturation = parseInt(searchParams.get('saturation') || '')

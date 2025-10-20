@@ -12,13 +12,14 @@ function intervalSeconds(interval: 'HOURLY' | 'DAILY' | 'WEEKLY') {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const profile = await getOrCreateProfile()
     if (!profile) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
+    const { id } = await params
     const playlist = await db.playlist.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: { orderBy: { order: 'asc' } } },
     })
     if (!playlist || playlist.profileId !== profile.id) {
@@ -28,7 +29,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const count = playlist.items.length
     if (!count) return NextResponse.json({ item: null, index: -1, count: 0 })
 
-    const secs = intervalSeconds(playlist.rotationInterval as any)
+    const secs = intervalSeconds(playlist.rotationInterval as 'HOURLY' | 'DAILY' | 'WEEKLY')
     const now = Date.now()
     const created = new Date(playlist.createdAt).getTime()
     const idx = Math.floor((now - created) / (secs * 1000)) % count
