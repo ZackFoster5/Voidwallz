@@ -74,29 +74,40 @@ export default function PremiumPage() {
     setError(null)
     
     try {
+      console.log('Starting checkout for plan:', planName)
+      
       // Map plan names to Stripe plan types
       const planType = planName === 'LIFETIME' ? 'LIFETIME' : 'PREMIUM'
       
+      console.log('Calling checkout API...')
       const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planType })
       })
 
+      console.log('Response status:', response.status)
+
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to create checkout session')
+        console.error('Checkout API error:', data)
+        throw new Error(data.details || data.error || 'Failed to create checkout session')
       }
 
       const { url } = await response.json()
+      console.log('Checkout URL:', url)
       
       // Redirect to Stripe Checkout
       if (url) {
+        console.log('Redirecting to Stripe...')
         window.location.href = url
+      } else {
+        throw new Error('No checkout URL received')
       }
     } catch (err) {
       console.error('Checkout error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to start checkout')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start checkout'
+      setError(errorMessage)
       setIsProcessing(false)
     }
   }
