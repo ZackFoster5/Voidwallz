@@ -10,65 +10,38 @@ export function ThemeToggle({ className }: { className?: string }) {
   const isDark = theme === 'dark'
 
   return (
-    <button
-      onClick={toggleTheme}
-      className={cn(
-        "relative w-14 h-7 rounded-full border-2 border-foreground transition-all duration-300",
-        "shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)]",
-        "hover:translate-x-1 hover:translate-y-1 focus:outline-none overflow-hidden",
-        isDark ? "bg-gray-800" : "bg-gray-100",
-        className
-      )}
-      aria-label="Toggle theme"
-    >
-      {/* Track Background with Icons */}
-      <div className="absolute inset-0 flex items-center justify-between px-2">
-        <Icon name="sun" className={cn(
-          "w-3 h-3 transition-all duration-300 z-10",
-          isDark ? "text-gray-500" : "text-yellow-500"
-        )} />
-        <Icon name="moon" className={cn(
-          "w-3 h-3 transition-all duration-300 z-10",
-          isDark ? "text-blue-400" : "text-gray-400"
-        )} />
-      </div>
+    <label className={cn('theme-switch', className)}>
+      <input
+        type="checkbox"
+        checked={isDark}
+        onChange={toggleTheme}
+        aria-label="Toggle theme"
+      />
+      <span className="theme-switch__slider theme-switch__slider--round">
+        <span className="theme-switch__sun-moon">
+          <span className="theme-switch__light-ray theme-switch__light-ray--one" />
+          <span className="theme-switch__light-ray theme-switch__light-ray--two" />
+          <span className="theme-switch__light-ray theme-switch__light-ray--three" />
+          <span className="theme-switch__moon-dot theme-switch__moon-dot--one" />
+          <span className="theme-switch__moon-dot theme-switch__moon-dot--two" />
+          <span className="theme-switch__moon-dot theme-switch__moon-dot--three" />
+        </span>
 
-      {/* Sliding Toggle Circle */}
-      <motion.div
-        className={cn(
-          "absolute top-0.5 w-6 h-6 rounded-full border-2 border-foreground z-20",
-          "flex items-center justify-center",
-          isDark ? "bg-primary" : "bg-secondary"
-        )}
-        animate={{
-          x: isDark ? 26 : 0,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 400,
-          damping: 25
-        }}
-      >
-        {/* Active Icon */}
-        <motion.div
-          animate={{ 
-            rotate: isDark ? 0 : 0,
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            rotate: { duration: 0.3 },
-            scale: { duration: 0.2 }
-          }}
-        >
-          {isDark ? (
-            <Icon name="moon" className="w-3 h-3 text-background" />
-          ) : (
-            <Icon name="sun" className="w-3 h-3 text-background" />
-          )}
-        </motion.div>
-      </motion.div>
+        <span className="theme-switch__cloud theme-switch__cloud--light theme-switch__cloud--one" />
+        <span className="theme-switch__cloud theme-switch__cloud--light theme-switch__cloud--two" />
+        <span className="theme-switch__cloud theme-switch__cloud--light theme-switch__cloud--three" />
+        <span className="theme-switch__cloud theme-switch__cloud--dark theme-switch__cloud--four" />
+        <span className="theme-switch__cloud theme-switch__cloud--dark theme-switch__cloud--five" />
+        <span className="theme-switch__cloud theme-switch__cloud--dark theme-switch__cloud--six" />
 
-    </button>
+        <span className="theme-switch__stars">
+          <span className="theme-switch__star theme-switch__star--one" />
+          <span className="theme-switch__star theme-switch__star--two" />
+          <span className="theme-switch__star theme-switch__star--three" />
+          <span className="theme-switch__star theme-switch__star--four" />
+        </span>
+      </span>
+    </label>
   )
 }
 

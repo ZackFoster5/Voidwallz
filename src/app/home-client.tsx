@@ -44,6 +44,67 @@ export default function HomeClient() {
     },
   ]
 
+  const socialLinks = [
+    {
+      label: 'Instagram',
+      href: 'https://instagram.com/voidwallz',
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        >
+          <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
+          <path d="M16.5 12C16.5 14.4853 14.4853 16.5 12 16.5C9.51472 16.5 7.5 14.4853 7.5 12C7.5 9.51472 9.51472 7.5 12 7.5C14.4853 7.5 16.5 9.51472 16.5 12Z" />
+          <path d="M17.5078 6.5L17.4988 6.5" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      label: 'X (Twitter)',
+      href: 'https://x.com/voidwallz',
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 21L10.5484 13.4516M21 3L13.4516 10.5484M13.4516 10.5484L8 3H3L10.5484 13.4516M13.4516 10.5484L21 21H16L10.5484 13.4516" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Discord',
+      href: 'https://discord.gg/8HQPAPBrNM',
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M15.5008 17.75L16.7942 19.5205C16.9156 19.7127 17.1489 19.7985 17.3619 19.7224C18.1657 19.4353 20.158 18.6572 21.7984 17.4725C21.9263 17.3801 22.0002 17.2261 21.9992 17.0673C21.9992 8.25 19.5008 5.75 19.5008 5.75C19.5008 5.75 17.5008 4.60213 15.3547 4.25602C15.1436 4.22196 14.9368 4.33509 14.8429 4.52891L14.3979 5.44677C14.3979 5.44677 13.2853 5.21397 12 5.21397C10.7147 5.21397 9.6021 5.44677 9.6021 5.44677L9.15711 4.52891C9.06314 4.33509 8.85644 4.22196 8.64529 4.25602C6.50079 4.60187 4.50079 5.75 4.50079 5.75C4.50079 5.75 2.0008 8.25 2.0008 17.0673C1.9998 17.2261 2.07365 17.3801 2.20159 17.4725C3.84196 18.6572 5.8343 19.4353 6.63806 19.7224C6.85105 19.7985 7.08437 19.7127 7.20582 19.5205L8.50079 17.75" />
+          <path d="M17.5008 16.75C17.5008 16.75 15.2057 18.25 12.0008 18.25C8.79587 18.25 6.50079 16.75 6.50079 16.75" />
+          <path d="M17.2508 12.25C17.2508 13.3546 16.4673 14.25 15.5008 14.25C14.5343 14.25 13.7508 13.3546 13.7508 12.25C13.7508 11.1454 14.5343 10.25 15.5008 10.25C16.4673 10.25 17.2508 11.1454 17.2508 12.25Z" />
+          <path d="M10.2508 12.25C10.2508 13.3546 9.46729 14.25 8.50079 14.25C7.5343 14.25 6.75079 13.3546 6.75079 12.25C6.75079 11.1454 7.5343 10.25 8.50079 10.25C9.46729 10.25 10.2508 11.1454 10.2508 12.25Z" />
+        </svg>
+      ),
+    },
+  ]
+
   const stats = [
     { to: 10000, suffix: '+', label: 'Wallpapers' },
     { to: 500, suffix: 'K+', label: 'Downloads' },
@@ -57,6 +118,33 @@ export default function HomeClient() {
     { icon: <Icon name="star" className="w-6 h-6" />, text: 'Premium Badge & Status' },
     { icon: <Icon name="star" className="w-6 h-6" />, text: 'Ad-Free Experience' },
     { icon: <Icon name="check" className="w-6 h-6" />, text: 'Early Access to New Content' },
+  ]
+
+  const footerSections = [
+    {
+      title: 'Product',
+      links: [
+        { label: 'Gallery', href: '/gallery' },
+        { label: 'Categories', href: '#about' },
+        { label: 'Premium', href: '/premium' },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'About', href: '#about' },
+        { label: 'Community', href: '/gallery?tab=community' },
+        { label: 'Careers', href: '#' },
+      ],
+    },
+    {
+      title: 'Support',
+      links: [
+        { label: 'Help Center', href: '/support' },
+        { label: 'Report Issue', href: '/support/report' },
+        { label: 'Contact', href: '/contact' },
+      ],
+    },
   ]
 
 
@@ -373,6 +461,61 @@ export default function HomeClient() {
       </section>
       {/* Signup Modal */}
       <SignupModal open={showSignup} onClose={() => setShowSignup(false)} />
+
+      <footer className="bg-background border-t-2 border-foreground text-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            <div className="space-y-4">
+              <p className="font-mono text-xl font-bold uppercase tracking-widest">Voidwallz</p>
+              <p className="text-sm text-foreground/70 leading-relaxed">
+                Curating high-impact digital canvases for creators, gamers, and minimalists. Join the community and refresh every screen you own.
+              </p>
+            </div>
+            {footerSections.map((section) => (
+              <div key={section.title}>
+                <h4 className="font-mono text-sm font-bold uppercase tracking-widest text-foreground/80 mb-3">
+                  {section.title}
+                </h4>
+                <ul className="space-y-2 text-sm">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-foreground/70 hover:text-primary transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-foreground/30 pt-6 text-xs uppercase tracking-[0.2em] text-foreground/60 font-mono">
+            <span>&copy; {new Date().getFullYear()} Voidwallz. All rights reserved.</span>
+            <div className="flex items-center gap-6">
+              <Link href="/legal/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/legal/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/support" className="hover:text-primary transition-colors">Support</Link>
+            </div>
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="hover:text-primary transition-colors"
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
