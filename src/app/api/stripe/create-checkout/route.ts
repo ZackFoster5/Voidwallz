@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, STRIPE_PLANS } from '@/lib/stripe'
+import { stripe, STRIPE_PLANS, isStripeConfigured } from '@/lib/stripe'
 import { getOrCreateProfile } from '@/lib/premium'
 
 export async function POST(req: NextRequest) {
@@ -7,9 +7,9 @@ export async function POST(req: NextRequest) {
     console.log('Creating Stripe checkout session...')
     
     // Check if Stripe is configured
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('STRIPE_SECRET_KEY is not configured')
-      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 })
+    if (!isStripeConfigured || !stripe) {
+      console.error('Stripe is not configured')
+      return NextResponse.json({ error: 'Stripe is not available' }, { status: 503 })
     }
 
     const profile = await getOrCreateProfile()
